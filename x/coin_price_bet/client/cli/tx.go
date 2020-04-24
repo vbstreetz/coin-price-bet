@@ -30,6 +30,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 	coinPriceBetCmd.AddCommand(flags.PostCommands(
 		GetCmdRequest(cdc),
 		GetCmdSetChannel(cdc),
+		GetCmdGetGoldPrice(cdc),
 	)...)
 
 	return coinPriceBetCmd
@@ -107,6 +108,44 @@ $ %s tx coin_price_bet set-cahnnel bandchain coin_price_bet dbdfgsdfsd
 			}
 
 			return authclient.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
+	return cmd
+}
+
+// GetCmdGetGoldPrice implements the get gold price command handler.
+func GetCmdGetGoldPrice(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "get-gold-price",
+		Short: "Read current gold price from oracle",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Read current gold price from oracle.
+Example:
+$ %s tx coin_price_bet get-gold-price
+`,
+				version.ClientName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+// 			inBuf := bufio.NewReader(cmd.InOrStdin())
+// 			cliCtx := context.NewCLIContext().WithCodec(cdc)
+// 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(authclient.GetTxEncoder(cdc))
+//
+// 			msg := types.NewMsgSetSourceChannel(
+// 				args[0],
+// 				args[1],
+// 				args[2],
+// 				cliCtx.GetFromAddress(),
+// 			)
+//
+// 			err := msg.ValidateBasic()
+// 			if err != nil {
+// 				return err
+// 			}
+//
+// 			return authclient.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+        return nil
 		},
 	}
 

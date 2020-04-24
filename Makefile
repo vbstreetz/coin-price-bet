@@ -1,5 +1,7 @@
 #!/usr/bin/make -f
 
+o=$(o)
+
 PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
 VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
@@ -99,7 +101,7 @@ run:
 	@go run $(BUILD_FLAGS) ./cmd/bcd start --rpc.laddr=tcp://0.0.0.0:26657 --pruning=nothing
 
 cli:
-	@go run $(BUILD_FLAGS) ./cmd/bccli keys show -a requester
+	@go run $(BUILD_FLAGS) ./cmd/bccli $(o)
 
 go-mod-cache: go.sum
 	@echo "--> Download go modules to local cache"
