@@ -5,10 +5,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// RouterKey is they name of the goldcdp module
+// RouterKey is they name of the coin_price_bet module
 const RouterKey = ModuleName
 
-// MsgSetSoruceChannel is a message for setting source channel to other chain
+// MsgSetSourceChannel is a message for setting source channel to other chain
 type MsgSetSourceChannel struct {
 	ChainName     string         `json:"chain_name"`
 	SourcePort    string         `json:"source_port"`

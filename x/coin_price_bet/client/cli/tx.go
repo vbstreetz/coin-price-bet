@@ -15,24 +15,24 @@ import (
 	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	"github.com/spf13/cobra"
 
-	"github.com/bandprotocol/goldcdp/x/goldcdp/types"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
 
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
-	goldcdpCmd := &cobra.Command{
+	coinPriceBetCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "goldcdp transaction subcommands",
+		Short:                      "coin_price_bet transaction subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	goldcdpCmd.AddCommand(flags.PostCommands(
+	coinPriceBetCmd.AddCommand(flags.PostCommands(
 		GetCmdRequest(cdc),
 		GetCmdSetChannel(cdc),
 	)...)
 
-	return goldcdpCmd
+	return coinPriceBetCmd
 }
 
 // GetCmdRequest implements the request command handler.
@@ -44,7 +44,7 @@ func GetCmdRequest(cdc *codec.Codec) *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Make a new order to buy gold.
 Example:
-$ %s tx goldcdp buy 1000000dfsbsdfdf/transfer/uatom
+$ %s tx coin_price_bet buy 1000000dfsbsdfdf/transfer/uatom
 `,
 				version.ClientName,
 			),
@@ -84,7 +84,7 @@ func GetCmdSetChannel(cdc *codec.Codec) *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Register a verified channel.
 Example:
-$ %s tx goldcdp set-cahnnel bandchain goldcdp dbdfgsdfsd
+$ %s tx coin_price_bet set-cahnnel bandchain coin_price_bet dbdfgsdfsd
 `,
 				version.ClientName,
 			),

@@ -9,23 +9,23 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
 
-	"github.com/bandprotocol/goldcdp/x/goldcdp/types"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
 
 // GetQueryCmd returns
 func GetQueryCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
-	goldcdpCmd := &cobra.Command{
+	coinPriceBetCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Querying commands for the goldcdp module",
+		Short:                      "Querying commands for the coin_price_bet module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	goldcdpCmd.AddCommand(flags.GetCommands(
+	coinPriceBetCmd.AddCommand(flags.GetCommands(
 		GetCmdReadOrder(storeKey, cdc),
 	)...)
 
-	return goldcdpCmd
+	return coinPriceBetCmd
 }
 
 // GetCmdReadOrder queries order by orderID

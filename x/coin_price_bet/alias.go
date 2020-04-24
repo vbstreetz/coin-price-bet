@@ -1,8 +1,8 @@
-package goldcdp
+package coin_price_bet
 
 import (
-	"github.com/bandprotocol/goldcdp/x/goldcdp/keeper"
-	"github.com/bandprotocol/goldcdp/x/goldcdp/types"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/keeper"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
 
 const (

@@ -1,4 +1,4 @@
-package goldcdp
+package coin_price_bet
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/bandprotocol/goldcdp/x/goldcdp/client/cli"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/client/cli"
 )
 
 // AppModule Basics object

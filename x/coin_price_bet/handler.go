@@ -1,4 +1,4 @@
-package goldcdp
+package coin_price_bet
 
 import (
 	"encoding/binary"
@@ -13,7 +13,7 @@ import (
 	channel "github.com/cosmos/cosmos-sdk/x/ibc/04-channel"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/04-channel/types"
 
-	"github.com/bandprotocol/goldcdp/x/goldcdp/types"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
 
 // NewHandler creates the msg handler of this module, as required by Cosmos-SDK standard.
@@ -44,7 +44,7 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 	}
 	// TODO: Set all bandchain parameter here
 	bandChainID := "bandchain"
-	port := "goldcdp"
+	port := "coin_price_bet"
 	oracleScriptID := oracle.OracleScriptID(3)
 	calldata := make([]byte, 8)
 	binary.LittleEndian.PutUint64(calldata, 1000000)
@@ -63,7 +63,7 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 	if !found {
 		return nil, sdkerrors.Wrapf(
 			sdkerrors.ErrUnknownRequest,
-			"unknown channel %s port goldcdp",
+			"unknown channel %s port coin_price_bet",
 			channelID,
 		)
 	}

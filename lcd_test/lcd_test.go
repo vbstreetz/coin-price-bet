@@ -17,7 +17,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	mintkey "github.com/cosmos/cosmos-sdk/crypto"
-	mintkey "github.com/cosmos/cosmos-sdk/crypto/"
 	keys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/tests"
 	sdk "github.com/cosmos/cosmos-sdk/types"

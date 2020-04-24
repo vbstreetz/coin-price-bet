@@ -1,4 +1,4 @@
-package goldcdp
+package coin_price_bet
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"

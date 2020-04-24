@@ -13,8 +13,8 @@ Look how to setup at relayer.sh
 0. Set up channel in gold chain by bccli
 
 ```
-bccli tx goldcdp set-channel bandchain goldcdp <channel_id_of_goldcdp_goldchin> --from validator --keyring-backend test
-bccli tx goldcdp set-channel band-cosmoshub transfer <channel_id_of_transfer_goldchin> --from validator --keyring-backend test
+bccli tx coin_price_bet set-channel bandchain coin_price_bet <channel_id_of_coin_price_bet_goldchin> --from validator --keyring-backend test
+bccli tx coin_price_bet set-channel band-cosmoshub transfer <channel_id_of_transfer_goldchin> --from validator --keyring-backend test
 ```
 
 0.5 Get atom from faucet
@@ -37,5 +37,5 @@ curl --location --request POST 'http://gaia-ibc-hackathon.node.bandchain.org:800
 2. Send buy transaction
 
 ```
-bccli tx goldcdp buy <amount_same_unit_as_transfer> --from <account_in_gold_chain> --keyring-backend test
+bccli tx coin_price_bet buy <amount_same_unit_as_transfer> --from <account_in_gold_chain> --keyring-backend test
 ```

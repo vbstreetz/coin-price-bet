@@ -36,7 +36,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 
-	"github.com/bandprotocol/goldcdp/x/goldcdp"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet"
 )
 
 const appName = "BandConsumerApp"
@@ -68,7 +68,7 @@ var (
 		evidence.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		transfer.AppModuleBasic{},
-		goldcdp.AppModuleBasic{},
+		coin_price_bet.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -115,7 +115,7 @@ type BandConsumerApp struct {
 	evidenceKeeper evidence.Keeper
 	ibcKeeper      ibc.Keeper
 	transferKeeper transfer.Keeper
-	goldcdpKeeper  goldcdp.Keeper
+	coinPriceBetKeeper  coin_price_bet.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -142,7 +142,7 @@ func NewBandConsumerApp(
 		bam.MainStoreKey, auth.StoreKey, bank.StoreKey, staking.StoreKey,
 		supply.StoreKey, mint.StoreKey, distr.StoreKey, slashing.StoreKey,
 		gov.StoreKey, params.StoreKey, ibc.StoreKey, transfer.StoreKey,
-		evidence.StoreKey, upgrade.StoreKey, goldcdp.StoreKey,
+		evidence.StoreKey, upgrade.StoreKey, coin_price_bet.StoreKey,
 	)
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
@@ -228,8 +228,8 @@ func NewBandConsumerApp(
 	app.transferKeeper = transfer.NewKeeper(app.cdc, keys[transfer.StoreKey], transferCapKey,
 		app.ibcKeeper.ChannelKeeper, app.bankKeeper, app.supplyKeeper)
 
-	app.goldcdpKeeper = goldcdp.NewKeeper(
-		cdc, keys[goldcdp.StoreKey], app.bankKeeper, app.ibcKeeper.ChannelKeeper,
+	app.coinPriceBetKeeper = coin_price_bet.NewKeeper(
+		cdc, keys[coin_price_bet.StoreKey], app.bankKeeper, app.ibcKeeper.ChannelKeeper,
 	)
 
 	// register the staking hooks
@@ -255,7 +255,7 @@ func NewBandConsumerApp(
 		evidence.NewAppModule(app.evidenceKeeper),
 		ibc.NewAppModule(app.ibcKeeper),
 		transfer.NewAppModule(app.transferKeeper),
-		goldcdp.NewAppModule(app.goldcdpKeeper),
+		coin_price_bet.NewAppModule(app.coinPriceBetKeeper),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the

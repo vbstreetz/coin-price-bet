@@ -24,7 +24,7 @@ import (
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/bandprotocol/goldcdp/app"
+	"github.com/vbstreetz/coin-price-bet/app"
 )
 
 var (

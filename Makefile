@@ -95,6 +95,12 @@ install: go.sum
 	go install $(BUILD_FLAGS) ./cmd/bcd
 	go install $(BUILD_FLAGS) ./cmd/bccli
 
+run:
+	@go run $(BUILD_FLAGS) ./cmd/bcd start --rpc.laddr=tcp://0.0.0.0:26657 --pruning=nothing
+
+cli:
+	@go run $(BUILD_FLAGS) ./cmd/bccli keys show -a requester
+
 go-mod-cache: go.sum
 	@echo "--> Download go modules to local cache"
 	@go mod download

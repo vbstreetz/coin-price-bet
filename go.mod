@@ -1,4 +1,4 @@
-module github.com/bandprotocol/goldcdp
+module github.com/vbstreetz/coin-price-bet
 
 go 1.13
 
