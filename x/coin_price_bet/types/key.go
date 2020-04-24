@@ -9,7 +9,7 @@ import (
 
 const (
 	// ModuleName is the name of the module
-	ModuleName = "coin_price_bet"
+	ModuleName = "coinpricebet"
 	// StoreKey to be used when creating the KVStore
 	StoreKey = ModuleName
 )

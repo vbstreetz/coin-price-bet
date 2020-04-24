@@ -43,8 +43,8 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 		return nil, err
 	}
 	// TODO: Set all bandchain parameter here
-	bandChainID := "bandchain"
-	port := "coin_price_bet"
+	bandChainID := "ibc-bandchain"
+	port := "coinpricebet"
 	oracleScriptID := oracle.OracleScriptID(3)
 	calldata := make([]byte, 8)
 	binary.LittleEndian.PutUint64(calldata, 1000000)
