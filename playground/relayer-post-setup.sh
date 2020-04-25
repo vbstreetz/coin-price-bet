@@ -1,7 +1,4 @@
-betchain_transfer_channel=mwrxckqqod
-gaia_transfer_channel=vhmsetwvfk
-betchain_oracle_channel=acxqozvjex
-bandchain_oracle_channel=kgungluppp
+ export $(cat ./playground/relayers.env | xargs)
 
 # Create user-gaia user and request funds(atom) from cosmos faucet to it
 make bccli o='keys add user-gaia --keyring-backend test'
@@ -33,16 +30,6 @@ transfer $gaia_transfer_channel \
 --keyring-backend test \
 -b block \
 -y"
-
-#
-
-make bccli o="tx coinpricebet \
-set-channel ibc-bandchain coinpricebet $betchain_oracle_channel \
---from validator --keyring-backend test -y -b block"
-
-make bccli o="tx coinpricebet \
-set-channel band-cosmoshub transfer $betchain_transfer_channel \
---from validator --keyring-backend test -y -b block"
 
 #
 

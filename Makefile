@@ -97,16 +97,12 @@ install: go.sum
 	go install $(BUILD_FLAGS) ./cmd/bcd
 	go install $(BUILD_FLAGS) ./cmd/bccli
 
-betchain_transfer_channel=mwrxckqqod
-gaia_transfer_channel=vhmsetwvfk
-betchain_oracle_channel=acxqozvjex
-bandchain_oracle_channel=kgungluppp
-
 bcd:
 	@go run $(BUILD_FLAGS) ./cmd/bcd $(o)
 
 bccli:
 	@go run $(BUILD_FLAGS) ./cmd/bccli $(o)
+
 
 aa:
 	@$(MAKE) o="start --rpc.laddr=tcp://0.0.0.0:26657 --pruning=nothing"
@@ -117,23 +113,13 @@ ab:
 ac:
 	@rly st oracle --debug
 
-x:
-	@$(MAKE) bccli o="tx coinpricebet request-gold-price-update --from requester -b block"
-
-y:
-	$(MAKE) bccli o="tx
-	goldcdp buy 1000000000transfer/$(betchain_transfer_channel)/uatom
-	--from requester --keyring-backend test -y -b block"
-
-z:
-	$(MAKE) bccli o="query bank balances $(shell make bccli o="keys show -a requester --keyring-backend test")"
+fmt:
+	@gofmt -w .
 
 .PHONY: aa \
 	ab \
   	ac \
-  	x \
-  	y \
-  	z
+  	fmt
 
 go-mod-cache: go.sum
 	@echo "--> Download go modules to local cache"

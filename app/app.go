@@ -101,21 +101,21 @@ type BandConsumerApp struct {
 	subspaces map[string]params.Subspace
 
 	// keepers
-	accountKeeper  auth.AccountKeeper
-	bankKeeper     bank.Keeper
-	supplyKeeper   supply.Keeper
-	stakingKeeper  staking.Keeper
-	slashingKeeper slashing.Keeper
-	mintKeeper     mint.Keeper
-	distrKeeper    distr.Keeper
-	govKeeper      gov.Keeper
-	crisisKeeper   crisis.Keeper
-	paramsKeeper   params.Keeper
-	upgradeKeeper  upgrade.Keeper
-	evidenceKeeper evidence.Keeper
-	ibcKeeper      ibc.Keeper
-	transferKeeper transfer.Keeper
-	coinPriceBetKeeper  coin_price_bet.Keeper
+	accountKeeper      auth.AccountKeeper
+	bankKeeper         bank.Keeper
+	supplyKeeper       supply.Keeper
+	stakingKeeper      staking.Keeper
+	slashingKeeper     slashing.Keeper
+	mintKeeper         mint.Keeper
+	distrKeeper        distr.Keeper
+	govKeeper          gov.Keeper
+	crisisKeeper       crisis.Keeper
+	paramsKeeper       params.Keeper
+	upgradeKeeper      upgrade.Keeper
+	evidenceKeeper     evidence.Keeper
+	ibcKeeper          ibc.Keeper
+	transferKeeper     transfer.Keeper
+	coinPriceBetKeeper coin_price_bet.Keeper
 
 	// the module manager
 	mm *module.Manager

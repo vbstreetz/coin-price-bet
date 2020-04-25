@@ -18,7 +18,8 @@ var (
 )
 
 type (
-	Keeper              = keeper.Keeper
-	MsgBuyGold          = types.MsgBuyGold
-	MsgSetSourceChannel = types.MsgSetSourceChannel
+	Keeper                    = keeper.Keeper
+	MsgBuyGold                = types.MsgBuyGold
+	MsgSetSourceChannel       = types.MsgSetSourceChannel
+	MsgRequestGoldPriceUpdate = types.MsgRequestGoldPriceUpdate
 )

@@ -37,5 +37,7 @@ rly tx link transfer
 rly tx link oracle
 
 ## Seperate run these command in different windows
-#rly st oracle
-#rly st transfer
+#rly st transfer --debug
+#rly st oracle --debug
+
+

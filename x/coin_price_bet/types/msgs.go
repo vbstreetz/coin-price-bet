@@ -102,7 +102,7 @@ func (msg MsgBuyGold) GetSignBytes() []byte {
 
 // MsgRequestGoldPriceUpdate is a message for creating order to buy gold
 type MsgRequestGoldPriceUpdate struct {
-	Requester  sdk.AccAddress `json:"requester"`
+	Requester sdk.AccAddress `json:"requester"`
 }
 
 // NewMsgRequestGoldPriceUpdate creates a new MsgRequestGoldPriceUpdate instance.
@@ -110,7 +110,7 @@ func NewMsgRequestGoldPriceUpdate(
 	requester sdk.AccAddress,
 ) MsgRequestGoldPriceUpdate {
 	return MsgRequestGoldPriceUpdate{
-		Requester:  requester,
+		Requester: requester,
 	}
 }
 
