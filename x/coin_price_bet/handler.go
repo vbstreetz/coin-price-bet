@@ -19,7 +19,8 @@ import (
 )
 
 var logger log.Logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
-var COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX string = "Gold Price Update Request"
+var COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX string = "GOLD_PRICE_UPDATE_REQUEST"
+var BUY_GOLD_PACKET_CLIENT_ID_PREFIX string = "ORDER:"
 
 // NewHandler creates the msg handler of this module, as required by Cosmos-SDK standard.
 func NewHandler(keeper Keeper) sdk.Handler {
@@ -43,6 +44,15 @@ func NewHandler(keeper Keeper) sdk.Handler {
 		}
 	}
 }
+
+//
+
+func handleSetSourceChannel(ctx sdk.Context, msg MsgSetSourceChannel, keeper Keeper) (*sdk.Result, error) {
+	keeper.SetChannel(ctx, msg.ChainName, msg.SourcePort, msg.SourceChannel)
+	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
+}
+
+//
 
 func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result, error) {
 	orderID, err := keeper.AddOrder(ctx, msg.Buyer, msg.Amount)
@@ -87,8 +97,11 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 		)
 	}
 	packet := oracle.NewOracleRequestPacketData(
-		fmt.Sprintf("Order:%d", orderID), oracleScriptID, hex.EncodeToString(calldata),
-		askCount, minCount,
+		fmt.Sprintf("%s%d", BUY_GOLD_PACKET_CLIENT_ID_PREFIX, orderID),
+		oracleScriptID,
+		hex.EncodeToString(calldata),
+		askCount,
+		minCount,
 	)
 	err = keeper.ChannelKeeper.SendPacket(ctx, channel.NewPacket(packet.GetBytes(),
 		sequence, port, channelID, destinationPort, destinationChannel,
@@ -100,18 +113,74 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }
 
-func handleSetSourceChannel(ctx sdk.Context, msg MsgSetSourceChannel, keeper Keeper) (*sdk.Result, error) {
-	keeper.SetChannel(ctx, msg.ChainName, msg.SourcePort, msg.SourceChannel)
+func handleRequestGoldPriceUpdate(ctx sdk.Context, msg MsgRequestGoldPriceUpdate, keeper Keeper) (*sdk.Result, error) {
+	// TODO: Set all bandchain parameter here
+	bandChainID := "ibc-bandchain"
+	port := "coinpricebet"
+	oracleScriptID := oracle.OracleScriptID(2)
+	askCount := int64(1)
+	minCount := int64(1)
+
+	calldata, err := cryptoPrice("BTC", 1)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, fmt.Sprintf("%s", err))
+	}
+
+	channelID, err := keeper.GetChannel(ctx, bandChainID, port)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(
+			sdkerrors.ErrUnknownRequest,
+			"not found channel to bandchain",
+		)
+	}
+
+	sourceChannelEnd, found := keeper.ChannelKeeper.GetChannel(ctx, port, channelID)
+	if !found {
+		return nil, sdkerrors.Wrapf(
+			sdkerrors.ErrUnknownRequest,
+			"unknown channel %s port coin_price_bet",
+			channelID,
+		)
+	}
+	destinationPort := sourceChannelEnd.Counterparty.PortID
+	destinationChannel := sourceChannelEnd.Counterparty.ChannelID
+	sequence, found := keeper.ChannelKeeper.GetNextSequenceSend(
+		ctx, port, channelID,
+	)
+	if !found {
+		return nil, sdkerrors.Wrapf(
+			sdkerrors.ErrUnknownRequest,
+			"unknown sequence number for channel %s port oracle",
+			channelID,
+		)
+	}
+
+	packet := oracle.NewOracleRequestPacketData(
+		COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX,
+		oracleScriptID,
+		calldata,
+		askCount,
+		minCount,
+	)
+	err = keeper.ChannelKeeper.SendPacket(ctx, channel.NewPacket(packet.GetBytes(),
+		sequence, port, channelID, destinationPort, destinationChannel,
+		1000000000, // Arbitrarily high timeout for now
+	))
+	if err != nil {
+		return nil, err
+	}
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }
 
-func handleOracleRespondPacketData(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) (*sdk.Result, error) {
-  logger.Info(packet.ClientID)
+//
 
-  var err error
+func handleOracleRespondPacketData(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) (*sdk.Result, error) {
+	logger.Info(packet.ClientID)
+
+	var err error
 	switch true {
-	case strings.HasPrefix(packet.ClientID, "Order:"):
-		err = handleOracleRespondFullfillOrder(ctx, packet, keeper)
+	case strings.HasPrefix(packet.ClientID, BUY_GOLD_PACKET_CLIENT_ID_PREFIX):
+		err = handleOracleRespondFulfillOrder(ctx, packet, keeper)
 	case strings.HasPrefix(packet.ClientID, COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX):
 		err = handleOracleCompleteGoldPriceUpdate(ctx, packet, keeper)
 	default:
@@ -121,7 +190,8 @@ func handleOracleRespondPacketData(ctx sdk.Context, packet oracle.OracleResponse
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, err
 }
 
-func handleOracleRespondFullfillOrder(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) error {
+func handleOracleRespondFulfillOrder(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) error {
+	logger.Info("fulfilling bug gold order")
 	clientID := strings.Split(packet.ClientID, ":")
 	if len(clientID) != 2 {
 		return sdkerrors.Wrapf(types.ErrUnknownClientID, "unknown client id %s", packet.ClientID)
@@ -167,6 +237,7 @@ func handleOracleRespondFullfillOrder(ctx sdk.Context, packet oracle.OracleRespo
 }
 
 func handleOracleCompleteGoldPriceUpdate(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) error {
+	logger.Info("completing gold price update request")
 	rawResult, err := hex.DecodeString(packet.Result)
 	if err != nil {
 		return err
@@ -176,64 +247,7 @@ func handleOracleCompleteGoldPriceUpdate(ctx sdk.Context, packet oracle.OracleRe
 		return err
 	}
 
-	fmt.Printf("gold price %d\n", result.Px)
+	logger.Info(fmt.Sprintf("gold price %d", result.Px))
 
 	return nil
-}
-
-//
-
-func handleRequestGoldPriceUpdate(ctx sdk.Context, msg MsgRequestGoldPriceUpdate, keeper Keeper) (*sdk.Result, error) {
-	// TODO: Set all bandchain parameter here
-	bandChainID := "ibc-bandchain"
-	port := "coinpricebet"
-	oracleScriptID := oracle.OracleScriptID(3)
-	calldata := make([]byte, 8)
-	binary.LittleEndian.PutUint64(calldata, 1000000)
-	askCount := int64(1)
-	minCount := int64(1)
-
-	channelID, err := keeper.GetChannel(ctx, bandChainID, port)
-
-	if err != nil {
-		return nil, sdkerrors.Wrapf(
-			sdkerrors.ErrUnknownRequest,
-			"not found channel to bandchain",
-		)
-	}
-	sourceChannelEnd, found := keeper.ChannelKeeper.GetChannel(ctx, port, channelID)
-	if !found {
-		return nil, sdkerrors.Wrapf(
-			sdkerrors.ErrUnknownRequest,
-			"unknown channel %s port coin_price_bet",
-			channelID,
-		)
-	}
-	destinationPort := sourceChannelEnd.Counterparty.PortID
-	destinationChannel := sourceChannelEnd.Counterparty.ChannelID
-	sequence, found := keeper.ChannelKeeper.GetNextSequenceSend(
-		ctx, port, channelID,
-	)
-	if !found {
-		return nil, sdkerrors.Wrapf(
-			sdkerrors.ErrUnknownRequest,
-			"unknown sequence number for channel %s port oracle",
-			channelID,
-		)
-	}
-	packet := oracle.NewOracleRequestPacketData(
-		COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX,
-		oracleScriptID,
-		hex.EncodeToString(calldata),
-		askCount,
-		minCount,
-	)
-	err = keeper.ChannelKeeper.SendPacket(ctx, channel.NewPacket(packet.GetBytes(),
-		sequence, port, channelID, destinationPort, destinationChannel,
-		1000000000, // Arbitrarily high timeout for now
-	))
-	if err != nil {
-		return nil, err
-	}
-	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }
