@@ -28,7 +28,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	coinPriceBetCmd.AddCommand(flags.PostCommands(
-		GetCmdRequest(cdc),
+		GetCmdBuyGoldRequest(cdc),
 		GetCmdSetChannel(cdc),
 		GetCmdRequestGoldPriceUpdate(cdc),
 	)...)
@@ -37,7 +37,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 }
 
 // GetCmdRequest implements the request command handler.
-func GetCmdRequest(cdc *codec.Codec) *cobra.Command {
+func GetCmdBuyGoldRequest(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "buy [amount]",
 		Short: "Make a new order to buy gold",
@@ -59,11 +59,11 @@ $ %s tx coinpricebet buy 1000000dfsbsdfdf/transfer/uatom
 			if err != nil {
 				return err
 			}
+
 			msg := types.NewMsgBuyGold(
 				cliCtx.GetFromAddress(),
 				amount,
 			)
-
 			err = msg.ValidateBasic()
 			if err != nil {
 				return err

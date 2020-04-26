@@ -12,13 +12,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channel "github.com/cosmos/cosmos-sdk/x/ibc/04-channel"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/04-channel/types"
-	"github.com/tendermint/tendermint/libs/log"
-
+	// "github.com/bandprotocol/bandchain/chain/borsh" // nukes dependency tree: todo - pin version
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
-	"os"
 )
 
-var logger log.Logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 var COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX string = "GOLD_PRICE_UPDATE_REQUEST"
 var BUY_GOLD_PACKET_CLIENT_ID_PREFIX string = "ORDER:"
 
@@ -121,9 +118,18 @@ func handleRequestGoldPriceUpdate(ctx sdk.Context, msg MsgRequestGoldPriceUpdate
 	askCount := int64(1)
 	minCount := int64(1)
 
+	//   e := borsh.NewEncoder()
+	//   e.EncodeString("BTC")
+	//   e.EncodeSigned64(1)
+	//   calldata := fmt.Sprintf("%x", e.GetEncodedData())
+
 	calldata, err := cryptoPrice("BTC", 1)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, fmt.Sprintf("%s", err))
+		return nil, sdkerrors.Wrapf(
+			sdkerrors.ErrUnknownRequest,
+			"error computing coin price calldata%s",
+			err,
+		)
 	}
 
 	channelID, err := keeper.GetChannel(ctx, bandChainID, port)
@@ -191,7 +197,7 @@ func handleOracleRespondPacketData(ctx sdk.Context, packet oracle.OracleResponse
 }
 
 func handleOracleRespondFulfillOrder(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) error {
-	logger.Info("fulfilling bug gold order")
+	logger.Info("fulfilling buy gold order")
 	clientID := strings.Split(packet.ClientID, ":")
 	if len(clientID) != 2 {
 		return sdkerrors.Wrapf(types.ErrUnknownClientID, "unknown client id %s", packet.ClientID)

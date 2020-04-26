@@ -11,6 +11,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/client/cli"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/client/rest"
 )
 
 // AppModule Basics object
@@ -41,7 +42,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONMarshaler, bz json.RawMessag
 
 // Register rest routes
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	// rest.RegisterRoutes(ctx, rtr, StoreKey)
+	rest.RegisterRoutes(ctx, rtr, StoreKey)
 }
 
 // Get the root query command of this module
@@ -90,7 +91,8 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Context, block abci.RequestEndBlock) []abci.ValidatorUpdate {
+	handleEndBlock(ctx, am.keeper, block)
 	return []abci.ValidatorUpdate{}
 }
 

@@ -33,8 +33,11 @@ rly pth gen  band-consumer transfer band-cosmoshub transfer transfer
 rly pth gen  band-consumer coinpricebet ibc-bandchain oracle oracle
 
 # Create connection and channel from path
-rly tx link transfer
-rly tx link oracle
+echo "" > ./playground/relayer-create.log
+rly tx link transfer >> ./playground/relayer-create.log
+rly tx link oracle >> ./playground/relayer-create.log
+
+./playground/update-env.sh
 
 ## Seperate run these command in different windows
 #rly st transfer --debug

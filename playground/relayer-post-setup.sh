@@ -1,4 +1,3 @@
- export $(cat ./playground/relayers.env | xargs)
 
 # Create user-gaia user and request funds(atom) from cosmos faucet to it
 make bccli o='keys add user-gaia --keyring-backend test'
@@ -17,6 +16,9 @@ POST 'http://gaia-ibc-hackathon.node.bandchain.org:8000' \
 make bccli o="query bank balances $user_gaia_addr \
 --node http://gaia-ibc-hackathon.node.bandchain.org:26657 \
 --chain-id=band-cosmoshub"
+
+#
+export $(cat ./playground/relayers.env | xargs)
 
 #
 
