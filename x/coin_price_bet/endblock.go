@@ -5,7 +5,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-const PRICE_PING_BLOCK_MOD int64 = 120
+const PRICE_PING_BLOCK_MOD int64 = 30
 
 func handleEndBlock(ctx sdk.Context, k Keeper, block abci.RequestEndBlock) {
 	coins := GetCoins()

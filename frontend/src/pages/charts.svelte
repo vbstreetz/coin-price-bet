@@ -1,6 +1,6 @@
 <script>
   import {onMount} from 'svelte';
-  import {data, fetchData} from './fetch-graph-data';
+  import {data, fetchData} from '../utils/fetch-graph-data';
   import Chart from 'svelte-frappe-charts';
 
   const tokens = [

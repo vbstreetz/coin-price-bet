@@ -43,7 +43,7 @@ func requestCoinPrice(ctx sdk.Context, keeper Keeper, blockId int64, coinId int6
 
   e := NewEncoder()
   e.EncodeString(coin)
-  e.EncodeSigned64(types.MULTIPLIER)
+  e.EncodeU64(uint64(types.MULTIPLIER))
   calldata := fmt.Sprintf("%x", e.GetEncodedData())
 
 	// calldata, err := cryptoPrice(coin, types.MULTIPLIER)
