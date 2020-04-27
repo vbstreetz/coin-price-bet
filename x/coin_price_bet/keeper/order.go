@@ -1,14 +1,33 @@
 package keeper
 
 import (
-	"strings"
-
+	"encoding/binary"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfer "github.com/cosmos/cosmos-sdk/x/ibc/20-transfer"
-
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
+	"strings"
 )
+
+// GetOrderCount returns the current number of all orders ever exist.
+func (k Keeper) GetOrderCount(ctx sdk.Context) uint64 {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.OrdersCountStoreKey)
+	if bz == nil {
+		return 0
+	}
+	return binary.BigEndian.Uint64(bz)
+}
+
+// GetNextOrderCount increments and returns the current number of orders.
+// If the global order count is not set, it initializes it with value 0.
+func (k Keeper) GetNextOrderCount(ctx sdk.Context) uint64 {
+	orderCount := k.GetOrderCount(ctx)
+	store := ctx.KVStore(k.storeKey)
+	bz := sdk.Uint64ToBigEndian(orderCount + 1)
+	store.Set(types.OrdersCountStoreKey, bz)
+	return orderCount + 1
+}
 
 func (k Keeper) AddOrder(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) (uint64, error) {
 	orderID := k.GetNextOrderCount(ctx)

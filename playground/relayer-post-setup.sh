@@ -40,3 +40,7 @@ coinpricebet buy 1000000000transfer/$betchain_transfer_channel/uatom \
 --from requester --keyring-backend test -y -b block"
 
 make bccli o="query bank balances $requester_addr"
+
+#
+
+make bccli o="query coinpricebet latest-coin-prices 0"

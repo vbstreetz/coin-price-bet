@@ -20,3 +20,8 @@ make bccli o="tx broadcast playground/signed-tx.json"
 
 # Confirm
 make bccli o="query bank balances $requester_addr"
+
+
+curl -XGET -s http://localhost:1317/coinpricebet/latest-coin-prices/0
+
+

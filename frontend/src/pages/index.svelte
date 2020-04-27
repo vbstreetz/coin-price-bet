@@ -1,10 +1,4 @@
 <script>
+  import { goto } from '@sveltech/routify'
+  $goto('/charts')
 </script>
-
-<style>
-
-</style>
-
-<div class="flex">
-    <a href="/playground">view playground ~></a>
-</div>

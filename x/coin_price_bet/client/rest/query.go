@@ -25,3 +25,21 @@ func readOrderHandler(cliCtx context.CLIContext, storeName string) http.HandlerF
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
 }
+
+func getLatestCoinPricesHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		coinID := vars[restPathVarCoinId]
+
+		res, _, err := cliCtx.QueryWithData(
+			fmt.Sprintf("custom/%s/latest-coin-prices/%s", storeName, coinID),
+			nil,
+		)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
+}

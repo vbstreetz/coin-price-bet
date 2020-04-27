@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
 
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/keeper"
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
 
@@ -23,6 +24,7 @@ func GetQueryCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 	}
 	coinPriceBetCmd.AddCommand(flags.GetCommands(
 		GetCmdReadOrder(storeKey, cdc),
+		GetCmdLatestCoinPrices(storeKey, cdc),
 	)...)
 
 	return coinPriceBetCmd
@@ -31,14 +33,14 @@ func GetQueryCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 // GetCmdReadOrder queries order by orderID
 func GetCmdReadOrder(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:  "order",
+		Use:  keeper.QueryOrder,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			orderID := args[0]
 
 			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/order/%s", queryRoute, orderID),
+				fmt.Sprintf("custom/%s/%s/%s", queryRoute, keeper.QueryOrder, orderID),
 				nil,
 			)
 			if err != nil {
@@ -51,6 +53,33 @@ func GetCmdReadOrder(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			return cliCtx.PrintOutput(order)
+		},
+	}
+}
+
+// GetCmdLatestCoinPrices logs latest prices graph of the given coins
+func GetCmdLatestCoinPrices(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:  keeper.QueryLatestCoinPrices,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			coinID := args[0]
+
+			res, _, err := cliCtx.QueryWithData(
+				fmt.Sprintf("custom/%s/%s/%s", queryRoute, keeper.QueryLatestCoinPrices, coinID),
+				nil,
+			)
+			if err != nil {
+				fmt.Printf("read request fail - %s %s\n", coinID, err)
+				return nil
+			}
+
+			var graph types.PriceGraph
+			if err := cdc.UnmarshalJSON(res, &graph); err != nil {
+				return err
+			}
+			return cliCtx.PrintOutput(graph)
 		},
 	}
 }

@@ -5,7 +5,7 @@ import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy'
 import del from 'del'
-
+import css from "rollup-plugin-css-only";
 import purgeCss from '@fullhuman/postcss-purgecss'
 import autoprefixer from 'autoprefixer'
 import postcssImport from 'postcss-import'
@@ -35,6 +35,7 @@ function createConfig({ output, inlineDynamicImports, plugins = [] }) {
       ...output
     },
     plugins: [
+      css({ output: "dist/build/extra.css" }),
       copy({
         targets: [
           { src: staticDir + '/**/!(__index.html)', dest: distDir },

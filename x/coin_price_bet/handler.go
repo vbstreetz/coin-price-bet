@@ -16,9 +16,6 @@ import (
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
 
-var COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX string = "GOLD_PRICE_UPDATE_REQUEST"
-var BUY_GOLD_PACKET_CLIENT_ID_PREFIX string = "ORDER:"
-
 // NewHandler creates the msg handler of this module, as required by Cosmos-SDK standard.
 func NewHandler(keeper Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
@@ -28,8 +25,6 @@ func NewHandler(keeper Keeper) sdk.Handler {
 			return handleBuyGold(ctx, msg, keeper)
 		case MsgSetSourceChannel:
 			return handleSetSourceChannel(ctx, msg, keeper)
-		case MsgRequestGoldPriceUpdate:
-			return handleRequestGoldPriceUpdate(ctx, msg, keeper)
 		case channeltypes.MsgPacket:
 			var responsePacket oracle.OracleResponsePacketData
 			if err := types.ModuleCdc.UnmarshalJSON(msg.GetData(), &responsePacket); err == nil {
@@ -56,16 +51,14 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Set all bandchain parameter here
-	bandChainID := "ibc-bandchain"
-	port := "coinpricebet"
 	oracleScriptID := oracle.OracleScriptID(3)
 	calldata := make([]byte, 8)
-	binary.LittleEndian.PutUint64(calldata, 1000000)
+	binary.LittleEndian.PutUint64(calldata, uint64(types.MULTIPLIER))
 	askCount := int64(1)
 	minCount := int64(1)
 
-	channelID, err := keeper.GetChannel(ctx, bandChainID, port)
+	port := types.BANDCHAIN_PORT
+	channelID, err := keeper.GetChannel(ctx, types.BANDCHAIN_ID, port)
 
 	if err != nil {
 		return nil, sdkerrors.Wrapf(
@@ -94,77 +87,9 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 		)
 	}
 	packet := oracle.NewOracleRequestPacketData(
-		fmt.Sprintf("%s%d", BUY_GOLD_PACKET_CLIENT_ID_PREFIX, orderID),
+		fmt.Sprintf("%s%d", types.BUY_GOLD_PACKET_CLIENT_ID_PREFIX, orderID),
 		oracleScriptID,
 		hex.EncodeToString(calldata),
-		askCount,
-		minCount,
-	)
-	err = keeper.ChannelKeeper.SendPacket(ctx, channel.NewPacket(packet.GetBytes(),
-		sequence, port, channelID, destinationPort, destinationChannel,
-		1000000000, // Arbitrarily high timeout for now
-	))
-	if err != nil {
-		return nil, err
-	}
-	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
-}
-
-func handleRequestGoldPriceUpdate(ctx sdk.Context, msg MsgRequestGoldPriceUpdate, keeper Keeper) (*sdk.Result, error) {
-	// TODO: Set all bandchain parameter here
-	bandChainID := "ibc-bandchain"
-	port := "coinpricebet"
-	oracleScriptID := oracle.OracleScriptID(2)
-	askCount := int64(1)
-	minCount := int64(1)
-
-	//   e := borsh.NewEncoder()
-	//   e.EncodeString("BTC")
-	//   e.EncodeSigned64(1)
-	//   calldata := fmt.Sprintf("%x", e.GetEncodedData())
-
-	calldata, err := cryptoPrice("BTC", 1)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(
-			sdkerrors.ErrUnknownRequest,
-			"error computing coin price calldata%s",
-			err,
-		)
-	}
-
-	channelID, err := keeper.GetChannel(ctx, bandChainID, port)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(
-			sdkerrors.ErrUnknownRequest,
-			"not found channel to bandchain",
-		)
-	}
-
-	sourceChannelEnd, found := keeper.ChannelKeeper.GetChannel(ctx, port, channelID)
-	if !found {
-		return nil, sdkerrors.Wrapf(
-			sdkerrors.ErrUnknownRequest,
-			"unknown channel %s port coin_price_bet",
-			channelID,
-		)
-	}
-	destinationPort := sourceChannelEnd.Counterparty.PortID
-	destinationChannel := sourceChannelEnd.Counterparty.ChannelID
-	sequence, found := keeper.ChannelKeeper.GetNextSequenceSend(
-		ctx, port, channelID,
-	)
-	if !found {
-		return nil, sdkerrors.Wrapf(
-			sdkerrors.ErrUnknownRequest,
-			"unknown sequence number for channel %s port oracle",
-			channelID,
-		)
-	}
-
-	packet := oracle.NewOracleRequestPacketData(
-		COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX,
-		oracleScriptID,
-		calldata,
 		askCount,
 		minCount,
 	)
@@ -185,10 +110,10 @@ func handleOracleRespondPacketData(ctx sdk.Context, packet oracle.OracleResponse
 
 	var err error
 	switch true {
-	case strings.HasPrefix(packet.ClientID, BUY_GOLD_PACKET_CLIENT_ID_PREFIX):
+	case strings.HasPrefix(packet.ClientID, types.BUY_GOLD_PACKET_CLIENT_ID_PREFIX):
 		err = handleOracleRespondFulfillOrder(ctx, packet, keeper)
-	case strings.HasPrefix(packet.ClientID, COMPLETE_GOLD_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX):
-		err = handleOracleCompleteGoldPriceUpdate(ctx, packet, keeper)
+	case strings.HasPrefix(packet.ClientID, types.COMPLETE_COIN_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX):
+		err = handleOracleCompleteCoinPriceUpdate(ctx, packet, keeper)
 	default:
 		err = sdkerrors.Wrapf(types.ErrUnknownClientID, "unknown client id %s", packet.ClientID)
 	}
@@ -197,10 +122,10 @@ func handleOracleRespondPacketData(ctx sdk.Context, packet oracle.OracleResponse
 }
 
 func handleOracleRespondFulfillOrder(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) error {
-	logger.Info("fulfilling buy gold order")
+	logger.Info("Fulfilling buy gold order")
 	clientID := strings.Split(packet.ClientID, ":")
 	if len(clientID) != 2 {
-		return sdkerrors.Wrapf(types.ErrUnknownClientID, "unknown client id %s", packet.ClientID)
+		return sdkerrors.Wrapf(types.ErrUnknownClientID, "unknown %s client id %s", types.BUY_GOLD_PACKET_CLIENT_ID_PREFIX, packet.ClientID)
 	}
 
 	orderID, err := strconv.ParseUint(clientID[1], 10, 64)
@@ -242,8 +167,33 @@ func handleOracleRespondFulfillOrder(ctx sdk.Context, packet oracle.OracleRespon
 	return nil
 }
 
-func handleOracleCompleteGoldPriceUpdate(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) error {
-	logger.Info("completing gold price update request")
+func handleOracleCompleteCoinPriceUpdate(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) error {
+	logger.Info("Completing coin price update request")
+	clientID := strings.Split(packet.ClientID, ":")
+	if len(clientID) != 3 {
+		return sdkerrors.Wrapf(types.ErrUnknownClientID, "%s: unknown clientId(%s)", packet.ClientID)
+	}
+
+	// Get blockId
+	blockId, err := strconv.ParseInt(clientID[1], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	// Get coinId
+	coinId, err := strconv.ParseInt(clientID[2], 10, 64)
+	if err != nil {
+		return err
+	}
+
+	coins := GetCoins()
+
+	if int(coinId) >= len(coins) {
+		return sdkerrors.Wrapf(types.ErrUnknownClientID, "unknown %s coinId(%s)", types.COMPLETE_COIN_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX, coinId)
+	}
+	coin := GetCoins()[coinId]
+
+	// Get price
 	rawResult, err := hex.DecodeString(packet.Result)
 	if err != nil {
 		return err
@@ -252,8 +202,11 @@ func handleOracleCompleteGoldPriceUpdate(ctx sdk.Context, packet oracle.OracleRe
 	if err != nil {
 		return err
 	}
+	price := result.Px
 
-	logger.Info(fmt.Sprintf("gold price %d", result.Px))
+	logger.Info(fmt.Sprintf("Coin(%s) price(%d) time(%d)", coin, price, blockId))
+
+	keeper.SetBlockCoinPrice(ctx, int64(blockId), coinId, int64(price))
 
 	return nil
 }

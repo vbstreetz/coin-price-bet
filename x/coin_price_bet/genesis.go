@@ -6,7 +6,9 @@ import (
 )
 
 // GenesisState is the band-consumer state that must be provided at genesis.
-type GenesisState struct{}
+type GenesisState struct {
+	// Blocks map[int64][]int // timestamp => prices
+}
 
 // NewGenesisState creates a new genesis state.
 func NewGenesisState() GenesisState {

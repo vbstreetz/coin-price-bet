@@ -26,6 +26,15 @@ var (
 
 	// OrderStoreKeyPrefix is a prefix for storing order
 	OrderStoreKeyPrefix = []byte{0x02}
+
+	// BlockStoreKeyPrefix is a prefix for storing block id=>info{time, price}
+	BlockStoreKeyPrefix = []byte{0x07}
+
+	// BlockTimeStoreKeyPrefix is a prefix for storing block time=>id
+	BlockTimeStoreKeyPrefix = []byte{0x08}
+
+	// BlockTimesStoreKey is a prefix for storing block times array [time, ...]
+	BlockTimesStoreKey = []byte{0x08}
 )
 
 // ChannelStoreKey is a function to generate key for each verified channel in store
@@ -48,4 +57,14 @@ func uint64ToBytes(num uint64) []byte {
 
 func GetEscrowAddress() sdk.AccAddress {
 	return sdk.AccAddress(crypto.AddressHash([]byte("COLLATERAL")))
+}
+
+// BlockStoreKey is a function to generate key for each block in store
+func BlockStoreKey(blockID uint64) []byte {
+	return append(BlockStoreKeyPrefix, uint64ToBytes(blockID)...)
+}
+
+// BlockStoreKey is a function to generate key for each block time in store
+func BlockTimeStoreKey(blockTime uint64) []byte {
+	return append(BlockTimeStoreKeyPrefix, uint64ToBytes(blockTime)...)
 }

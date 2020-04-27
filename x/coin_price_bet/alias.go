@@ -15,11 +15,12 @@ var (
 	NewKeeper     = keeper.NewKeeper
 	RegisterCodec = types.RegisterCodec
 	NewQuerier    = keeper.NewQuerier
+	GetCoins      = types.GetCoins
+	logger        = types.Logger
 )
 
 type (
-	Keeper                    = keeper.Keeper
-	MsgBuyGold                = types.MsgBuyGold
-	MsgSetSourceChannel       = types.MsgSetSourceChannel
-	MsgRequestGoldPriceUpdate = types.MsgRequestGoldPriceUpdate
+	Keeper              = keeper.Keeper
+	MsgBuyGold          = types.MsgBuyGold
+	MsgSetSourceChannel = types.MsgSetSourceChannel
 )

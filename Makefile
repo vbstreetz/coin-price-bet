@@ -116,7 +116,7 @@ r:
 	@$(MAKE) bcd o="unsafe-reset-all"
 
 rest:
-	@$(MAKE) bccli o="rest-server --trust-node"
+	@$(MAKE) bccli o="rest-server --trust-node --unsafe-cors"
 
 fmt:
 	@gofmt -w .

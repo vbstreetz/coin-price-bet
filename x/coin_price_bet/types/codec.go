@@ -21,5 +21,4 @@ func init() {
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgSetSourceChannel{}, "coin_price_bet/SetSourceChannel", nil)
 	cdc.RegisterConcrete(MsgBuyGold{}, "coin_price_bet/BuyGold", nil)
-	cdc.RegisterConcrete(MsgRequestGoldPriceUpdate{}, "coin_price_bet/RequestGoldPriceUpdate", nil)
 }
