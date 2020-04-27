@@ -60,9 +60,12 @@ func (k Keeper) GetLatestCoinPriceGraph(ctx sdk.Context, coinId uint64) (*types.
 	k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &blockTimes)
 
 	graph := &types.PriceGraph{}
-	latestBlockTimes := blockTimes[len(blockTimes)-10:]
 
-	for _, blockTime := range latestBlockTimes {
+	if len(blockTimes) > 10 {
+		blockTimes = blockTimes[len(blockTimes)-10:]
+	}
+
+	for _, blockTime := range blockTimes {
 		var blockId int64
 		blockIdBytes := store.Get(types.BlockTimeStoreKey(blockTime))
 		if blockIdBytes == nil {

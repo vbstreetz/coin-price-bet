@@ -1,4 +1,7 @@
 run:
 	@npm run dev
 
-.PHONY: run
+deploy:
+	@npm run deploy:netlify
+
+.PHONY: deploy run
