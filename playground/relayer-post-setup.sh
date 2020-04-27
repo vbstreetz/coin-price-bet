@@ -22,6 +22,15 @@ export $(cat ./playground/relayers.env | xargs)
 
 #
 
+curl --location --request POST 'http://54.169.14.201/faucet/request' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"address": "'"$(rly keys show ibc-bandchain)"'",
+	"amount": 10000000
+}'
+
+#
+
 make bccli o="tx transfer transfer \
 transfer $gaia_transfer_channel \
 10000000 $requester_addr \

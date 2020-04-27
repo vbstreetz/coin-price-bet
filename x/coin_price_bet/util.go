@@ -41,12 +41,13 @@ func requestCoinPrice(ctx sdk.Context, keeper Keeper, blockId int64, coinId int6
 	destinationPort := sourceChannelEnd.Counterparty.PortID
 	destinationChannel := sourceChannelEnd.Counterparty.ChannelID
 
-	//   e := borsh.NewEncoder()
-	//   e.EncodeString("BTC")
-	//   e.EncodeSigned64(1)
-	//   calldata := fmt.Sprintf("%x", e.GetEncodedData())
+  e := NewEncoder()
+  e.EncodeString(coin)
+  e.EncodeSigned64(types.MULTIPLIER)
+  calldata := fmt.Sprintf("%x", e.GetEncodedData())
 
-	calldata, err := cryptoPrice(coin, types.MULTIPLIER)
+	// calldata, err := cryptoPrice(coin, types.MULTIPLIER)
+
 	if err != nil {
 		return sdkerrors.Wrapf(
 			sdkerrors.ErrUnknownRequest,
