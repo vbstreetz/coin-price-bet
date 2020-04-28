@@ -61,8 +61,9 @@ func (k Keeper) GetLatestCoinPriceGraph(ctx sdk.Context, coinId uint64) (*types.
 
 	graph := &types.PriceGraph{}
 
-	if len(blockTimes) > 10 {
-		blockTimes = blockTimes[len(blockTimes)-10:]
+  n := 50
+	if len(blockTimes) > n {
+		blockTimes = blockTimes[len(blockTimes)-n:]
 	}
 
 	for _, blockTime := range blockTimes {

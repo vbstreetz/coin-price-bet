@@ -1,7 +1,7 @@
 import {writable, get} from "svelte/store";
 import moment from 'moment';
 
-const API_HOST = window.location.hostname === 'localhost' ? 'localhost': '144.202.100.245';
+const API_HOST = window.location.hostname; // window.location.hostname === 'localhost' ? 'localhost': '144.202.100.245';
 
 export const data = writable({
   times: [],
