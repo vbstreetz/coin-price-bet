@@ -34,13 +34,13 @@
   }
 </style>
 
-<div class="flex">
+<div class="flex flex-col">
   <div class="heading">
     <h3>Price Performance</h3>
   </div>
 
   <div>
-    <div class="dropdown is-hoverable hidden">
+    <div class="dropdown is-hoverable">
       <div class="dropdown-trigger cursor-pointer">
         <div
           aria-haspopup="true"

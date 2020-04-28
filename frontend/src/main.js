@@ -1,3 +1,9 @@
+import './main.css';
+import 'bulma/css/bulma.css';
+import 'tailwindcss/dist/base.css';
+import 'tailwindcss/dist/components.css';
+import 'tailwindcss/dist/utilities.css';
+
 import HMR from  '@sveltech/routify/hmr'
 import App from './App.svelte';
 

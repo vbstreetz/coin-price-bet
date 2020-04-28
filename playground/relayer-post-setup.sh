@@ -53,3 +53,5 @@ make bccli o="query bank balances $requester_addr"
 #
 
 make bccli o="query coinpricebet latest-coin-prices 0"
+
+# ufw allow 26657

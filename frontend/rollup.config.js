@@ -6,12 +6,8 @@ import { terser } from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy'
 import del from 'del'
 import css from "rollup-plugin-css-only";
-import purgeCss from '@fullhuman/postcss-purgecss'
-import autoprefixer from 'autoprefixer'
-import postcssImport from 'postcss-import'
 import postcss from 'rollup-plugin-postcss'
-import tailwind from 'tailwindcss'
-
+import sveltePreprocessPostcss from 'svelte-preprocess-postcss';
 
 const staticDir = 'static'
 const distDir = 'dist'
@@ -22,6 +18,35 @@ const shouldPrerender = (typeof process.env.PRERENDER !== 'undefined') ? process
 
 
 del.sync(distDir + '/**')
+
+const bundledConfig = {
+  inlineDynamicImports: true,
+  output: {
+    format: 'iife',
+    file: `${buildDir}/bundle.js`
+  },
+  plugins: [
+    !production && serve(),
+    !production && livereload(distDir),
+  ]
+}
+
+const dynamicConfig = {
+  inlineDynamicImports: false,
+  output: {
+    format: 'esm',
+    dir: buildDir
+  },
+  plugins: [
+    !production && livereload(distDir),
+  ]
+}
+
+const configs = [createConfig(bundledConfig)]
+if (bundling === 'dynamic')
+  configs.push(createConfig(dynamicConfig))
+if (shouldPrerender) [...configs].pop().plugins.push(prerender())
+export default configs
 
 function createConfig({ output, inlineDynamicImports, plugins = [] }) {
   const transform = inlineDynamicImports ? bundledTransform : dynamicTransform
@@ -50,16 +75,13 @@ function createConfig({ output, inlineDynamicImports, plugins = [] }) {
         // a separate file — better for performance
         css: css => {
           css.write(`${buildDir}/bundle.css`);
-        }
+        },
+        preprocess: {
+          style: sveltePreprocessPostcss(),
+        },
       }),
 
       postcss({
-        plugins: [
-          postcssImport,
-          tailwind(),
-          autoprefixer,
-          production && removeUnusedCss,
-        ].filter(Boolean),
         extract: 'public/bundle.css',
       }),
 
@@ -86,44 +108,6 @@ function createConfig({ output, inlineDynamicImports, plugins = [] }) {
     }
   }
 }
-
-
-const removeUnusedCss = purgeCss({
-  content: ['./src/**/*.html', './src/**/*.svelte'],
-  defaultExtractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || [],
-})
-
-
-const bundledConfig = {
-  inlineDynamicImports: true,
-  output: {
-    format: 'iife',
-    file: `${buildDir}/bundle.js`
-  },
-  plugins: [
-    !production && serve(),
-    !production && livereload(distDir),
-  ]
-}
-
-const dynamicConfig = {
-  inlineDynamicImports: false,
-  output: {
-    format: 'esm',
-    dir: buildDir
-  },
-  plugins: [
-    !production && livereload(distDir),
-  ]
-}
-
-
-const configs = [createConfig(bundledConfig)]
-if (bundling === 'dynamic')
-  configs.push(createConfig(dynamicConfig))
-if (shouldPrerender) [...configs].pop().plugins.push(prerender())
-export default configs
-
 
 function serve() {
   let started = false;
