@@ -1,6 +1,6 @@
 {
   "key": "consumer",
-  "chain-id": "band-consumer",
+  "chain-id": "vbstreetz",
   "rpc-addr": "http://localhost:26657",
   "account-prefix": "cosmos",
   "gas": 1000000,

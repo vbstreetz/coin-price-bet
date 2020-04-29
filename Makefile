@@ -50,7 +50,7 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=band-consumer \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=vbstreetz \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=bcd \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=bccli \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
@@ -246,11 +246,11 @@ setup-transactions: start-bc
 	@bash ./lcd_test/testdata/setup.sh
 
 run-lcd-contract-tests:
-	@echo "Running Band-Consumer LCD for contract tests"
+	@echo "Running vbstreetz LCD for contract tests"
 	./build/bccli rest-server --laddr tcp://0.0.0.0:8080 --home /tmp/contract_tests/.bccli --node http://localhost:26657 --chain-id lcd --trust-node true
 
 contract-tests: setup-transactions
-	@echo "Running Band-Consumer LCD for contract tests"
+	@echo "Running vbstreetz LCD for contract tests"
 	dredd && pkill bcd
 
 ###############################################################################

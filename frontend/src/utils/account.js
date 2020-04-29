@@ -4,9 +4,10 @@ import { query, mutate } from './xhr';
 export default new (class {
   constructor() {}
 
-  async setMnemonic(mnemonic) {
+  async setMnemonic(mnemonic, prefix = 'cosmos') {
     this.privateKey = getECPrivateKey(mnemonic);
-    this.address = getAddress(this.privateKey);
+    this.address = getAddress(this.privateKey, prefix);
+    console.log(this.address);
     this.account = (await query(`/auth/accounts/${this.address}`)).value;
   }
 

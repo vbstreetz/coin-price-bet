@@ -1,7 +1,7 @@
 export $(cat ./playground/relayers.env | xargs)
 
 requester_addr=$(make bccli o='keys show -a requester --keyring-backend test')
-chain_id=band-consumer
+chain_id=vbstreetz
 
 # Get the sequence and account numbers for `requester` to construct the below requests
 curl -s http://localhost:1317/auth/accounts/$requester_addr

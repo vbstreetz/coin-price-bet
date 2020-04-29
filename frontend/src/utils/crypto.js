@@ -10,8 +10,8 @@ export function getECPrivateKey(mnemonic) {
   return generateWalletFromMnemonic(mnemonic, HD_PATH);
 }
 
-export function getAddress(privateKey) {
-  return privateKey.toPubKey().toAddress().toBech32('cosmos');
+export function getAddress(privateKey, prefix) {
+  return privateKey.toPubKey().toAddress().toBech32(prefix);
 }
 
 export function signTransaction({

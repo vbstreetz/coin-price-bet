@@ -43,7 +43,7 @@ func main() {
 	cobra.EnableCommandSorting = false
 	rootCmd := &cobra.Command{
 		Use:               "bcd",
-		Short:             "Band-consumer Daemon (server)",
+		Short:             "vbstreetz Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
 

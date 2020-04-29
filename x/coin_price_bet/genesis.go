@@ -5,7 +5,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-// GenesisState is the band-consumer state that must be provided at genesis.
+// GenesisState is the vbstreetz state that must be provided at genesis.
 type GenesisState struct {
 	// Blocks map[int64][]int // timestamp => prices
 }

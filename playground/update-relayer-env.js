@@ -2,8 +2,8 @@ const fs = require('fs');
 const readline = require('readline');
 const logfile = __dirname + '/relayer-create.log';
 
-const re1 = new RegExp('Channel created: \\[band-consumer\\]chan\{(\\w+)\}port\{transfer\} -> \\[band-cosmoshub\\]chan\{(\\w+)\}port\{transfer\}');
-const re2 = new RegExp('Channel created: \\[band-consumer\\]chan\{(\\w+)\}port\{coinpricebet\} -> \\[ibc-bandchain\\]chan\{(\\w+)\}port\{oracle\}');
+const re1 = new RegExp('Channel created: \\[vbstreetz\\]chan\{(\\w+)\}port\{transfer\} -> \\[band-cosmoshub\\]chan\{(\\w+)\}port\{transfer\}');
+const re2 = new RegExp('Channel created: \\[vbstreetz\\]chan\{(\\w+)\}port\{coinpricebet\} -> \\[ibc-bandchain\\]chan\{(\\w+)\}port\{oracle\}');
 
 const env = {};
 

@@ -23,7 +23,8 @@
   ];
 
   onMount(async function () {
-    await account.setMnemonic('smile stem oven genius cave resource better lunar nasty moon company ridge brass rather supply used horn three panic put venue analyst leader comic');
+    // await account.setMnemonic('smile stem oven genius cave resource better lunar nasty moon company ridge brass rather supply used horn three panic put venue analyst leader comic');
+    await account.setMnemonic('typical abstract shoe junior annual idle conduct extend high source cliff zero quality brick fluid spare roast pulp claw swear bicycle lens teach digital');
     console.log(await account.tx({}));
   });
 
