@@ -7,7 +7,7 @@ chain_id=band-consumer
 curl -s http://localhost:1317/auth/accounts/$requester_addr
 
 account_number=4
-sequence=2
+sequence=3
 
 # Create buy_gold raw transaction
 curl -XPOST -s http://localhost:1317/coinpricebet/buy --data-binary '{"base_req":{"from":"'$requester_addr'","chain_id":"'$chain_id'"},"amount":"1000000000transfer/'$betchain_transfer_channel'/uatom"}' > playground/unsigned-tx.json

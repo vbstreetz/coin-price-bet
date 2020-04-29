@@ -1,6 +1,8 @@
 <script>
   import moment from 'moment';
+  import {onMount} from 'svelte';
   import Clock from '../components/clock.svelte';
+  import account from '../utils/account';
 
   const tomorrow = moment.utc().add(1);
   const today = moment.utc();
@@ -20,16 +22,20 @@
     "XTZ",
   ];
 
+  onMount(async function () {
+    await account.setMnemonic('smile stem oven genius cave resource better lunar nasty moon company ridge brass rather supply used horn three panic put venue analyst leader comic');
+    console.log(await account.tx({}));
+  });
 
-  function onSendPrediction(event) {
+  async function onSendPrediction(event) {
     event.preventDefault();
     const coin = event.target.coin.value;
     const band = event.target.band.value;
     console.log(coin, band);
 
-    console.log(await sendTransaction({
-
-    }));
+    // console.log(await account.tx({
+    //
+    // }));
   }
 
 </script>
@@ -48,7 +54,8 @@
       <div class="day-container flex">
         <div class="day-divider flex justify-center">
           <div class="day-divider-dot">
-            <div class="day-divider-dot-inner {day.active ? 'day-divider-dot-inner--active' : ''} flex items-center justify-center"></div>
+            <div
+              class="day-divider-dot-inner {day.active ? 'day-divider-dot-inner--active' : ''} flex items-center justify-center"></div>
           </div>
         </div>
         <div class="day-body">
@@ -71,7 +78,7 @@
               <div class="row field">
                 {#if day.active}
                   <header><h1>Closing in</h1></header>
-                  <Clock />
+                  <Clock/>
                 {/if}
               </div>
               <div class="row field">
@@ -135,33 +142,33 @@
                 </div>
               </div>
               {#if day.active}
-              <div class="mt-5">
-                <div class="row field">
-                  <header><h1>Predict tomorrow's best crypto</h1></header>
-                  <form on:submit={onSendPrediction}>
-                    <label for="bet-select">I predict that the best performing crypto during tomorrow will be:</label>
-                    <div class="select">
-                      <select id="bet-select" name="coin">
-                        {#each coins as coin}
-                          <option value="{coin}">{coin}</option>
-                        {/each}
-                      </select>
-                    </div>
+                <div class="mt-5">
+                  <div class="row field">
+                    <header><h1>Predict tomorrow's best crypto</h1></header>
+                    <form on:submit={onSendPrediction}>
+                      <label for="bet-select">I predict that the best performing crypto during tomorrow will be:</label>
+                      <div class="select">
+                        <select id="bet-select" name="coin">
+                          {#each coins as coin}
+                            <option value="{coin}">{coin}</option>
+                          {/each}
+                        </select>
+                      </div>
 
-                    <div class="mt-3">
-                      <label for="bet-input">I'm supporting my prediction with this amount of BAND:</label>
-                      <br/>
-                      <input required="required" class="input" type="text" id="bet-input" name="band" />
-                    </div>
+                      <div class="mt-3">
+                        <label for="bet-input">I'm supporting my prediction with this amount of BAND:</label>
+                        <br/>
+                        <input required="required" class="input" type="text" id="bet-input" name="band"/>
+                      </div>
 
-                    <div class="flex flex-grow mt-3">
-                      <button type="submit" class="button is-link flex-grow">
-                        Send prediction
-                      </button>
-                    </div>
-                  </form>
+                      <div class="flex flex-grow mt-3">
+                        <button type="submit" class="button is-link flex-grow">
+                          Send prediction
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              </div>
               {/if}
             </div>
             <!-- end my bets -->

@@ -1,1 +1,1 @@
-{"error":"chain-id required but not specified"}
+{"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"coin_price_bet/BuyGold","value":{"buyer":"cosmos15d4apf20449ajvwycq8ruaypt7v6d34522frnd","amount":[{"denom":"transfer//uatom","amount":"1000000000"}]}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}

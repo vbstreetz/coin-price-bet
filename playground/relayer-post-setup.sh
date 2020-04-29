@@ -10,7 +10,7 @@ POST 'http://gaia-ibc-hackathon.node.bandchain.org:8000' \
 --header 'Content-Type: application/javascript' \
 --data-raw '{
  "address": "'"$user_gaia_addr"'",
- "chain-id": "band-cosmoshub"
+ "chain-id": "band-cosmoshub"c
 }'
 
 make bccli o="query bank balances $user_gaia_addr \
