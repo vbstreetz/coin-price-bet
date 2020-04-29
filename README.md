@@ -1,41 +1,10 @@
-## Instruction
+![](https://i.imgur.com/k9qHaBz.png)
 
-1. `Make install` to get `bcd` and `bccli`
-2. Initialized chain example can find at `start.sh`
-3. Run single validator by `bcd start --rpc.laddr=tcp://0.0.0.0:26657 --pruning=nothing`
+### 🚧 Work in Progress
 
-## Setup relayer
+- Frontend is hosted at: http://144.202.100.245:3000
+- Dapp allows betting on the future(tomorrow) best performing crypto.
+- The crypto prices are sourced from a [Band Protocol Oracle](https://bandprotocol.com).
 
-Look how to setup at relayer.sh
+Project is an adaptation of [CoinPrice.bet](https://coinprice.bet) for the [Band Protocol IBC Gitcoin Hackathon](https://gitcoin.co/issue/bandprotocol/cross-chain-hackthon/3/4229).
 
-## How to get gold
-
-0. Set up channel in gold chain by bccli
-
-```
-bccli tx coin_price_bet set-channel bandchain coin_price_bet <channel_id_of_coin_price_bet_goldchin> --from validator --keyring-backend test
-bccli tx coin_price_bet set-channel band-cosmoshub transfer <channel_id_of_transfer_goldchin> --from validator --keyring-backend test
-```
-
-0.5 Get atom from faucet
-
-```
-curl --location --request POST 'http://gaia-ibc-hackathon.node.bandchain.org:8000' \
---header 'Content-Type: application/javascript' \
---data-raw '{
- "address": <your_address>,
- "chain-id": "band-cosmoshub"
-}'
-```
-
-1. Transfer coin from gaia to bandchain
-
-```
-(bccli|gaiacli) tx transfer transfer transfer <channel_id_of_gaia> 10000000 <account_in_gold_chain> 800000000transfer/<channel_id_of_gold_chain>/uatom --from <account_in_gaia> --node http://gaia-ibc-hackathon.node.bandchain.org:26657 --keyring-backend test --chain-id band-cosmoshub
-```
-
-2. Send buy transaction
-
-```
-bccli tx coin_price_bet buy <amount_same_unit_as_transfer> --from <account_in_gold_chain> --keyring-backend test
-```
