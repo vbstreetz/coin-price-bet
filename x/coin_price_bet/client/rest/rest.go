@@ -17,4 +17,5 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 	r.HandleFunc(fmt.Sprintf("/%s/buy", storeName), buyGoldRequestHandler(cliCtx, storeName)).Methods("POST")
 	r.HandleFunc(fmt.Sprintf("/%s/order/{%s}", storeName, restPathVarOrderId), readOrderHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/latest-coin-prices/{%s}", storeName, restPathVarCoinId), getLatestCoinPricesHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/place-bet", storeName), placeBetHandler(cliCtx, storeName)).Methods("POST")
 }

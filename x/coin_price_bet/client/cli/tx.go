@@ -30,6 +30,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 	coinPriceBetCmd.AddCommand(flags.PostCommands(
 		GetCmdBuyGoldRequest(cdc),
 		GetCmdSetChannel(cdc),
+		GetCmdPlaceBet(cdc),
 	)...)
 
 	return coinPriceBetCmd
@@ -102,6 +103,46 @@ $ %s tx coinpricebet set-cahnnel bandchain coin_price_bet dbdfgsdfsd
 			)
 
 			err := msg.ValidateBasic()
+			if err != nil {
+				return err
+			}
+
+			return authclient.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
+	return cmd
+}
+
+// GetCmdRequest implements the request command handler.
+func GetCmdPlaceBet(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "place-bet [coin] [amount]",
+		Short: "Place a bet",
+		Args:  cobra.ExactArgs(2),
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Place a bet on a particular coin.
+Example:
+$ %s tx coinpricebet place-bet btc 1000000dfsbsdfdf/transfer/uatom
+`,
+				version.ClientName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(authclient.GetTxEncoder(cdc))
+
+			amount, err := sdk.ParseCoins(args[0])
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgPlaceBet(
+				cliCtx.GetFromAddress(),
+				amount,
+			)
+			err = msg.ValidateBasic()
 			if err != nil {
 				return err
 			}
