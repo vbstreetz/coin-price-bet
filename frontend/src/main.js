@@ -1,4 +1,5 @@
 import './main.css';
+import 'nprogress/nprogress.css';
 import 'bulma/css/bulma.css';
 import 'tailwindcss/dist/base.css';
 import 'tailwindcss/dist/components.css';

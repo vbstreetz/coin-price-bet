@@ -3,6 +3,12 @@
   import {onMount} from 'svelte';
   import Clock from '../components/clock.svelte';
   import account from '../utils/account';
+  import {fromMicro, toMicro} from '../utils/cosmos';
+  import sl from '../utils/sl';
+  import {BETCHAIN_TRANSFER_CHANNEL} from '../config';
+
+  let address;
+  let balance = 0;
 
   const tomorrow = moment.utc().add(1);
   const today = moment.utc();
@@ -23,31 +29,76 @@
   ];
 
   onMount(async function () {
-    // await account.setMnemonic('smile stem oven genius cave resource better lunar nasty moon company ridge brass rather supply used horn three panic put venue analyst leader comic');
-    await account.setMnemonic('typical abstract shoe junior annual idle conduct extend high source cliff zero quality brick fluid spare roast pulp claw swear bicycle lens teach digital');
-    console.log(await account.tx({}));
+    if (await account.loadPrivateKeyFromCache()) {
+      await loadAccount();
+    }
   });
+
+  async function connectAccount() {
+    const mnemonic = prompt('Enter mnemonic:');
+    if (!mnemonic) {return;}
+    if (await account.loadPrivateKeyFromMnemonic(mnemonic)) {
+      await loadAccount();
+    }
+  }
+
+  function disconnectAccount() {
+    account.disconnect();
+    address = null;
+  }
+
+  async function loadAccount() {
+    address = account.deriveAddress();
+    await account.loadAccount();
+    await onLoadBalance();
+  }
+
+  async function onLoadBalance() {
+    const coins = await account.query(`/bank/balances/${address}`);
+    for (let i = 0; i < coins.length; i++) {
+      const coin = coins[i];
+      if (~coin.denom.search(`transfer/${BETCHAIN_TRANSFER_CHANNEL}/uatom`)) {
+        balance = coin.amount;
+        break;
+      }
+    }
+  }
 
   async function onSendPrediction(event) {
     event.preventDefault();
     const coin = event.target.coin.value;
-    const band = event.target.band.value;
-    console.log(coin, band);
+    const atom = event.target.atom.value;
 
-    // console.log(await account.tx({
-    //
-    // }));
+    try {
+      await account.tx('post', '/coinpricebet/place-bet', {
+        amount: `${toMicro(atom)} transfer/${BETCHAIN_TRANSFER_CHANNEL}/uatom`,
+        coin: coins.indexOf(coin)
+      });
+      sl('success', 'WAITING FOR CONFIRMATION...');
+    } catch (e) {
+      sl('error', e);
+    }
   }
 
 </script>
 
 <div>
   <div class="flex">
-    <h1 class="main-heading flex-grow">BET TODAY, THE BEST CRYPTO OF TOMORROW, AND WIN!</h1>
+    <h1 class="main-heading flex-grow">BET TODAY,<br/>THE BEST CRYPTO OF TOMORROW, AND WIN!</h1>
 
-    <button class="button is-light is-small">
-      CONNECT
-    </button>
+    {#if address}
+      <div class="flex flex-col text-sm">
+        <div>Account: {address}</div>
+        <div>Balance: {fromMicro(balance)}atom</div>
+      </div>
+      <button class="button is-light is-small ml-2" on:click={disconnectAccount}>
+        DISCONNECT
+      </button>
+    {:else}
+      <button class="button is-light is-small" on:click={connectAccount}>
+        CONNECT
+      </button>
+    {/if}
   </div>
 
   <div class="main-container">
@@ -85,7 +136,7 @@
               <div class="row field">
                 <header><h1>Current grand prize</h1></header>
                 <div class="grand-prize">
-                  <div class="band">0.0000<span class="currency">BAND</span></div>
+                  <div class="atom">0.0000<span class="currency">ATOM</span></div>
                   <ul class="fiat">
                     <li>~0.00<span class="currency">USD</span></li>
                     <li>~0.00<span class="currency">EUR</span></li>
@@ -132,8 +183,8 @@
                         {#each coins as coin}
                           <tr>
                             <td class="text-left">{coin}</td>
-                            <td class="text-right">0.00 BAND</td>
-                            <td class="text-right">0.00 BAND</td>
+                            <td class="text-right">0.00 ATOM</td>
+                            <td class="text-right">0.00 ATOM</td>
                           </tr>
                         {/each}
                         </tbody>
@@ -157,9 +208,9 @@
                       </div>
 
                       <div class="mt-3">
-                        <label for="bet-input">I'm supporting my prediction with this amount of BAND:</label>
+                        <label for="bet-input">I'm supporting my prediction with this amount of ATOM:</label>
                         <br/>
-                        <input required="required" class="input" type="text" id="bet-input" name="band"/>
+                        <input required="required" class="input" type="text" id="bet-input" name="atom"/>
                       </div>
 
                       <div class="flex flex-grow mt-3">
@@ -175,8 +226,6 @@
             <!-- end my bets -->
           </div>
         </div>
-
-
       </div>
     {/each}
   </div>
@@ -334,7 +383,7 @@
     font-size: 1.1rem;
   }
 
-  .grand-prize .band {
+  .grand-prize .atom {
     border: 2px solid hsl(204, 71%, 53%);
     border-radius: 4px;
     font-size: 3em;

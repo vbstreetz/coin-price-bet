@@ -1,7 +1,9 @@
 <script>
   import {onMount} from 'svelte';
-  import {data, fetchData} from '../utils/fetch-graph-data';
+  import account from '../utils/account';
   import Chart from 'svelte-frappe-charts';
+  import { writable } from 'svelte/store';
+  import moment from 'moment';
 
   const tokens = [
     "BTC",
@@ -13,6 +15,10 @@
     "XTZ"
   ];
   let currentToken = tokens[0];
+  export const data = writable({
+    times: [],
+    prices: [],
+  });
 
   $: graph = {
     labels: $data.times,
@@ -25,6 +31,14 @@
     const token = event.target.dataset.token;
     currentToken = tokens[token];
     fetchData(token);
+  }
+
+  async function fetchData(coin = 0) {
+    const { times, prices } = await account.query(`/coinpricebet/latest-coin-prices/${coin}`);
+    data.set({
+      times: times.map((s) => moment.unix(parseInt(s)).format('HH:mm:ss')),
+      prices: prices.map((s) => parseInt(s) / 1000000),
+    });
   }
 </script>
 

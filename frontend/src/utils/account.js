@@ -1,40 +1,24 @@
-import { getECPrivateKey, getAddress, signTransaction } from './crypto';
-import { query, mutate } from './xhr';
+import NProgress from 'nprogress';
+import Cosmos from './cosmos';
 
-export default new (class {
-  constructor() {}
+const API_HOST =
+  window.location.hostname === 'localhost'
+    ? 'http://localhost:1317'
+    : 'http://144.202.100.245:1317';
+const CHAIN_ID = 'vbstreetz';
 
-  async setMnemonic(mnemonic, prefix = 'cosmos') {
-    this.privateKey = getECPrivateKey(mnemonic);
-    this.address = getAddress(this.privateKey, prefix);
-    console.log(this.address);
-    this.account = (await query(`/auth/accounts/${this.address}`)).value;
-  }
-
-  async query(endpoint, data) {
-    return query(endpoint, data);
-  }
-
-  async tx(endpoint, data) {
-    return signTransaction({
-      accountNumber: this.account.account_number,
-      accountSequence: this.account.sequence,
-      privateKey: this.privateKey,
-    });
-    // const signedTransaction = signTransaction(data);
-    // return await this.broadcastSignedTransaction(endpoint, signedTransaction);
-  }
-
-  async broadcastSignedTransaction(endpoint, txn) {
-    const res = await mutate(endpoint, txn);
-    const { data, code, raw_log } = await res.json();
-    if (code) {
-      throw new Error(raw_log);
+export default new (class extends Cosmos {
+  async xhr(...args) {
+    NProgress.start();
+    NProgress.set(0.4);
+    try {
+      return await super.xhr(...args);
+    } finally {
+      NProgress.done();
     }
-    if (!data) {
-      return;
-    }
-    const hex = data.toString('hex');
-    return hex ? JSON.parse(hex) : {};
   }
-})();
+})({
+  host: API_HOST,
+  chainId: CHAIN_ID,
+  gasInfo: { minFee: '525000', denom: 'stake' },
+});

@@ -24,7 +24,7 @@
     "no-constant-condition": "off",
     "no-eq-null": "warn",
     "no-prototype-builtins": "warn",
-    "no-restricted-globals": ["error", "event", "Promise", "name", "context"],
+    "no-restricted-globals": ["error", "event", "name", "context"],
     "no-restricted-syntax": ["error", "ForOfStatement"],
     "no-var": "warn",
     "object-shorthand": "warn",
