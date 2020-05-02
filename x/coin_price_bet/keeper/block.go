@@ -28,8 +28,7 @@ func (k Keeper) SetBlockCoinPrice(ctx sdk.Context, blockId int64, coinId int64, 
 		types.Logger.Info(fmt.Sprintf("Stored new block time %d", blockTime))
 
 		blockTimes := []int64{}
-		blockTimesBytes := store.Get(types.BlockTimesStoreKey)
-		if blockTimesBytes != nil {
+		if blockTimesBytes := store.Get(types.BlockTimesStoreKey); blockTimesBytes != nil {
 			k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &blockTimes)
 		}
 		blockTimes = append(blockTimes, blockTime)
@@ -53,27 +52,25 @@ func (k Keeper) GetLatestCoinPriceGraph(ctx sdk.Context, coinId uint64) (*types.
 	store := ctx.KVStore(k.storeKey)
 
 	blockTimes := []uint64{}
-	blockTimesBytes := store.Get(types.BlockTimesStoreKey)
-	if blockTimesBytes == nil {
+	if blockTimesBytes := store.Get(types.BlockTimesStoreKey); blockTimesBytes == nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "no times have been recorded")
+	} else {
+		k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &blockTimes)
 	}
-	k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &blockTimes)
 
 	graph := &types.PriceGraph{}
 
-  n := 50
+	n := 50
 	if len(blockTimes) > n {
 		blockTimes = blockTimes[len(blockTimes)-n:]
 	}
 
 	for _, blockTime := range blockTimes {
 		var blockId int64
-		blockIdBytes := store.Get(types.BlockTimeStoreKey(blockTime))
-		if blockIdBytes == nil {
+		if blockIdBytes := store.Get(types.BlockTimeStoreKey(blockTime)); blockIdBytes == nil {
 			types.Logger.Error(fmt.Sprintf("no block id has been recorded for time(%d)", blockTime))
 			continue
-		}
-		if err := binary.Read(bytes.NewReader(blockIdBytes), binary.LittleEndian, &blockId); err != nil {
+		} else if err := binary.Read(bytes.NewReader(blockIdBytes), binary.LittleEndian, &blockId); err != nil {
 			types.Logger.Error(fmt.Sprintf("%x could not be decoded to int", blockIdBytes))
 			continue
 		}
@@ -81,12 +78,12 @@ func (k Keeper) GetLatestCoinPriceGraph(ctx sdk.Context, coinId uint64) (*types.
 		// types.Logger.Info(fmt.Sprintf("Graph for block %d", blockId))
 
 		block := types.Block{}
-		blockBytes := store.Get(types.BlockStoreKey(uint64(blockId)))
-		if blockBytes == nil {
+		if blockBytes := store.Get(types.BlockStoreKey(uint64(blockId))); blockBytes == nil {
 			types.Logger.Error(fmt.Sprintf("no block info has been recorded for id(%d)", blockId))
 			continue
+		} else {
+			k.cdc.MustUnmarshalBinaryBare(blockBytes, &block)
 		}
-		k.cdc.MustUnmarshalBinaryBare(blockBytes, &block)
 
 		graph.Times = append(graph.Times, block.Time)
 		graph.Prices = append(graph.Prices, block.Prices[coinId])

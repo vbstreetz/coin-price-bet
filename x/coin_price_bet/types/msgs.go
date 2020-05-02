@@ -95,3 +95,54 @@ func (msg MsgBuyGold) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
+
+// MsgPlaceBet is a message for placing a bet
+type MsgPlaceBet struct {
+	Bettor sdk.AccAddress `json:"bettor"`
+	Amount sdk.Coins      `json:"amount"`
+	CoinId uint8          `json:"coinId"`
+}
+
+// NewMsgPlaceBet creates a new MsgPlaceBet instance.
+func NewMsgPlaceBet(
+	bettor sdk.AccAddress,
+	amount sdk.Coins,
+	coinId uint8,
+) MsgPlaceBet {
+	return MsgPlaceBet{
+		Bettor: bettor,
+		Amount: amount,
+		CoinId: coinId,
+	}
+}
+
+// Route implements the sdk.Msg interface for MsgPlaceBet.
+func (msg MsgPlaceBet) Route() string { return RouterKey }
+
+// Type implements the sdk.Msg interface for MsgPlaceBet.
+func (msg MsgPlaceBet) Type() string { return "place_bet" }
+
+// ValidateBasic implements the sdk.Msg interface for MsgPlaceBet.
+func (msg MsgPlaceBet) ValidateBasic() error {
+	if msg.Bettor.Empty() {
+		return sdkerrors.Wrapf(ErrInvalidBasicMsg, "MsgPlaceBet: Bettor address must not be empty.")
+	}
+	if msg.Amount.Empty() {
+		return sdkerrors.Wrapf(ErrInvalidBasicMsg, "MsgPlaceBet: Amount must not be empty.")
+	}
+	if msg.CoinId > uint8(len(GetCoins())) {
+		return sdkerrors.Wrapf(ErrInvalidBasicMsg, "MsgPlaceBet: Unknown CoinId.")
+	}
+	return nil
+}
+
+// GetSigners implements the sdk.Msg interface for MsgPlaceBet.
+func (msg MsgPlaceBet) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Bettor}
+}
+
+// GetSignBytes implements the sdk.Msg interface for MsgPlaceBet.
+func (msg MsgPlaceBet) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}

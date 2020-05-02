@@ -39,6 +39,11 @@ func NewOrder(owner sdk.AccAddress, amount sdk.Coins) Order {
 	}
 }
 
+type Block struct {
+	Time   int64   `json:"times"`
+	Prices []int64 `json:"prices"`
+}
+
 func GetCoins() []string {
 	return []string{
 		"BTC",
@@ -51,12 +56,33 @@ func GetCoins() []string {
 	}
 }
 
+//
+
 type PriceGraph struct {
 	Times  []int64 `json:"times"`
 	Prices []int64 `json:"prices"`
 }
 
-type Block struct {
-	Time   int64   `json:"times"`
-	Prices []int64 `json:"prices"`
+type Info struct {
+	FirstDay uint64 `json:"firstDay"`
+}
+
+type DayInfo struct {
+	GrandPrizeAmount uint64   `json:"grandPrizeAmount"`
+	AtomPriceCents   uint8    `json:"atomPriceCents"`
+	CoinsPerf        []uint8 `json:"coinsPerf"`
+	CoinsVolume      []uint64 `json:"coinsVolume"`
+	State uint8            `json:"state"`
+}
+
+type MyInfo struct {
+	TotalBetsAmount uint64 `json:"totalBetsAmount"`
+	TotalWinsAmount uint64 `json:"totalWinsAmount"`
+}
+
+type MyDayInfo struct {
+	CoinBetTotalAmount     []uint64 `json:"coinBetTotalAmount"`
+	CoinPredictedWinAmount []uint64 `json:"coinPredictedWinAmount"`
+	TotalBetAmount         uint64   `json:"totalBetAmount"`
+	TotalWinAmount         uint64   `json:"totalWinAmount"`
 }

@@ -1,14 +1,12 @@
 package rest
 
 import (
-	"net/http"
-
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
+	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
+	"net/http"
 )
 
 type buyGoldReq struct {
@@ -57,6 +55,12 @@ func buyGoldRequestHandler(cliCtx context.CLIContext, storeName string) http.Han
 	}
 }
 
+type placeBetReq struct {
+	BaseReq rest.BaseReq `json:"base_req"`
+	Amount  string       `json:"amount"`
+	CoinId  uint8        `json:"coinId"`
+}
+
 func placeBetHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req placeBetReq
@@ -87,6 +91,7 @@ func placeBetHandler(cliCtx context.CLIContext, storeName string) http.HandlerFu
 		msg := types.NewMsgPlaceBet(
 			bettorAddr,
 			amount,
+			req.CoinId,
 		)
 		err = msg.ValidateBasic()
 		if err != nil {

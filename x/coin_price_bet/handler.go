@@ -25,6 +25,9 @@ func NewHandler(keeper Keeper) sdk.Handler {
 			return handleBuyGold(ctx, msg, keeper)
 		case MsgSetSourceChannel:
 			return handleSetSourceChannel(ctx, msg, keeper)
+		case MsgPlaceBet:
+			return handlePlaceBet(ctx, msg, keeper)
+		// todo ensure msg is from badnchain
 		case channeltypes.MsgPacket:
 			var responsePacket oracle.OracleResponsePacketData
 			if err := types.ModuleCdc.UnmarshalJSON(msg.GetData(), &responsePacket); err == nil {
@@ -47,10 +50,13 @@ func handleSetSourceChannel(ctx sdk.Context, msg MsgSetSourceChannel, keeper Kee
 //
 
 func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result, error) {
-	orderID, err := keeper.AddOrder(ctx, msg.Buyer, msg.Amount)
-	if err != nil {
+	if err := keeper.EscrowCollateral(ctx, msg.Buyer, msg.Amount); err != nil {
 		return nil, err
 	}
+
+	orderID := keeper.GetNextOrderCount(ctx)
+	keeper.SetOrder(ctx, orderID, types.NewOrder(msg.Buyer, msg.Amount))
+
 	oracleScriptID := oracle.OracleScriptID(3)
 	calldata := make([]byte, 8)
 	binary.LittleEndian.PutUint64(calldata, uint64(types.MULTIPLIER))
@@ -208,5 +214,44 @@ func handleOracleCompleteCoinPriceUpdate(ctx sdk.Context, packet oracle.OracleRe
 
 	keeper.SetBlockCoinPrice(ctx, int64(blockId), coinId, int64(price))
 
+	// Do any payouts for yesterday
+
 	return nil
+}
+
+//
+
+func handlePlaceBet(ctx sdk.Context, msg MsgPlaceBet, keeper Keeper) (*sdk.Result, error) {
+	// 	if err := keeper.EscrowCollateral(ctx, msg.Bettor, msg.Amount); err != nil {
+	// 		return nil, err
+	// 	}
+	//
+	// 	amount := msg.Amount[0].Amount
+	// 	bettorAddress := msg.Better.String()
+	//
+	// 	types.Logger.Info(fmt.Sprintf("Updating mappings due to %s: %d", bettorAddress, amount))
+	// 	store := ctx.KVStore(keeper.storeKey)
+	//
+	// 	betDayId := keeper.GetDayId()
+	// 	betCoinDayId := keeper.GetCoinDayId(betDayId, msg.CoinId)
+	//
+	// 	// Upsert bet coin+day mappings
+	// 	betCoinDay := &BetCoinDay{}
+	// 	if betCoinDayBytes := store.Get(betCoinDayId); betCoinDayBytes != nil {
+	// 		k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &betCoinDay)
+	// 	}
+	// 	betCoinDay.TotalAmount += amount
+	// 	betCoinDay.Bets[bettorAddress] += amount
+	// 	betCoinDay.PaidBettors[bettorAddress] = false
+	// 	store.Set(betCoinDayId, k.cdc.MustMarshalBinaryBare(betCoinDay))
+	//
+	// 	// Upsert bet day mappings
+	// 	betDay := &BetDay{}
+	// 	if betDayBytes := store.Get(betDayId); betDayBytes != nil {
+	// 		k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &betDay)
+	// 	}
+	// 	betDay.GrandPrize += amount
+	// 	store.Set(betDayId, k.cdc.MustMarshalBinaryBare(betDay))
+
+	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }

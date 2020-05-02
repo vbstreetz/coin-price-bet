@@ -29,33 +29,27 @@ func (k Keeper) GetNextOrderCount(ctx sdk.Context) uint64 {
 	return orderCount + 1
 }
 
-func (k Keeper) AddOrder(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) (uint64, error) {
-	orderID := k.GetNextOrderCount(ctx)
+// Escrow amount
+func (k Keeper) EscrowCollateral(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) error {
 	// TODO: Config chain name
 	collateralChain := "band-cosmoshub"
 
 	// TODO: Support only 1 coin
 	if len(amount) != 1 {
-		return 0, sdkerrors.Wrapf(types.ErrOnlyOneDenomAllowed, "%d denoms included", len(amount))
+		return sdkerrors.Wrapf(types.ErrOnlyOneDenomAllowed, "%d denoms included", len(amount))
 	}
 	channelID, err := k.GetChannel(ctx, collateralChain, "transfer")
 	if err != nil {
-		return 0, err
+		return err
 	}
 	prefix := transfer.GetDenomPrefix("transfer", channelID)
 	if !strings.HasPrefix(amount[0].Denom, prefix) {
-		return 0, sdkerrors.Wrapf(types.ErrInvalidDenom, "denom was: %s", amount[0].Denom)
+		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom was: %s", amount[0].Denom)
 	}
 
-	// escrow source tokens. It fails if balance insufficient.
+	// Escrow source tokens. It fails if balance insufficient.
 	escrowAddress := types.GetEscrowAddress()
-	err = k.BankKeeper.SendCoins(ctx, buyer, escrowAddress, amount)
-	if err != nil {
-		return 0, err
-	}
-	k.SetOrder(ctx, orderID, types.NewOrder(buyer, amount))
-
-	return orderID, nil
+	return k.BankKeeper.SendCoins(ctx, buyer, escrowAddress, amount)
 }
 
 // SetOrder saves the given order to the store without performing any validation.

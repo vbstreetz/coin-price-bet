@@ -10,11 +10,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	"github.com/spf13/cobra"
-
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
 
@@ -138,9 +138,26 @@ $ %s tx coinpricebet place-bet btc 1000000dfsbsdfdf/transfer/uatom
 				return err
 			}
 
+			coinIsSupported := false
+			var coinId uint8
+
+			coin := strings.ToUpper(args[1])
+			for i, c := range types.GetCoins() {
+				if c == coin {
+					coinId = uint8(i)
+					coinIsSupported = true
+					break
+				}
+			}
+
+			if !coinIsSupported {
+				return sdkerrors.Wrapf(types.ErrOnlyOneDenomAllowed, "%d denoms included", len(amount))
+			}
+
 			msg := types.NewMsgPlaceBet(
 				cliCtx.GetFromAddress(),
 				amount,
+				coinId,
 			)
 			err = msg.ValidateBasic()
 			if err != nil {

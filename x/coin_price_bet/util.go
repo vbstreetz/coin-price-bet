@@ -41,10 +41,10 @@ func requestCoinPrice(ctx sdk.Context, keeper Keeper, blockId int64, coinId int6
 	destinationPort := sourceChannelEnd.Counterparty.PortID
 	destinationChannel := sourceChannelEnd.Counterparty.ChannelID
 
-  e := NewEncoder()
-  e.EncodeString(coin)
-  e.EncodeU64(uint64(types.MULTIPLIER))
-  calldata := fmt.Sprintf("%x", e.GetEncodedData())
+	e := NewEncoder()
+	e.EncodeString(coin)
+	e.EncodeU64(uint64(types.MULTIPLIER))
+	calldata := fmt.Sprintf("%x", e.GetEncodedData())
 
 	// calldata, err := cryptoPrice(coin, types.MULTIPLIER)
 

@@ -28,13 +28,16 @@ var (
 	OrderStoreKeyPrefix = []byte{0x02}
 
 	// BlockStoreKeyPrefix is a prefix for storing block id=>info{time, price}
-	BlockStoreKeyPrefix = []byte{0x07}
+	BlockStoreKeyPrefix = []byte{0x03}
 
 	// BlockTimeStoreKeyPrefix is a prefix for storing block time=>id
-	BlockTimeStoreKeyPrefix = []byte{0x08}
+	BlockTimeStoreKeyPrefix = []byte{0x04}
 
 	// BlockTimesStoreKey is a prefix for storing block times array [time, ...]
-	BlockTimesStoreKey = []byte{0x08}
+	BlockTimesStoreKey = []byte{0x05}
+
+	// BetDaysStoreKey is a prefix for storing block times array [time, ...]
+	BetDaysStoreKey = []byte{0x06}
 )
 
 // ChannelStoreKey is a function to generate key for each verified channel in store
