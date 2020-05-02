@@ -102,7 +102,7 @@ func queryDayInfo(
 	ctx sdk.Context, keeper Keeper, req abci.RequestQuery, dayId string,
 ) ([]byte, error) {
 	ret := &types.DayInfo{
-		CoinsPerf:   []uint64{},
+		CoinsPerf:   []uint8{},
 		CoinsVolume: []uint64{},
 		State: 0,
 	}

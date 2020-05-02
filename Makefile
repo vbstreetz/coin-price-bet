@@ -124,6 +124,8 @@ fmt:
 ssh:
 	@ssh root@144.202.100.245
 
+superv:
+	@sudo brew services restart supervisor
 
 go-mod-cache: go.sum
 	@echo "--> Download go modules to local cache"
