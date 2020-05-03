@@ -47,7 +47,7 @@ dependency-graph.png
 *.out
 *.synctex.gz
 contract_tests/*
-./playground/relayers.env
+playground/relayers.env
 
 # Local Netlify folder
 .netlify
