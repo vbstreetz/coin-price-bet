@@ -16,7 +16,7 @@ var GAIA_CHAIN_ID string = "band-cosmoshub"
 var BAND_CHAIN_ID string = "ibc-bandchain"
 
 var TRANSFER_PORT string = "transfer"
-var ORACLE_PORT string = "oracle"
+var ORACLE_PORT string = "coinpricebet"
 
 var MULTIPLIER int64 = 1000000
 
