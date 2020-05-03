@@ -1,9 +1,5 @@
-import './main.css';
-import 'nprogress/nprogress.css';
-import 'bulma/css/bulma.css';
-import 'tailwindcss/dist/base.css';
-import 'tailwindcss/dist/components.css';
-import 'tailwindcss/dist/utilities.css';
+import './styles/index.css';
+import './styles/main.scss';
 
 import HMR from '@sveltech/routify/hmr';
 import App from './App.svelte';

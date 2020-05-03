@@ -31,6 +31,7 @@ rly lite init band-cosmoshub -f
 # Create path(specific connection between chain)
 rly pth gen vbstreetz transfer band-cosmoshub transfer transfer
 rly pth gen vbstreetz coinpricebet ibc-bandchain oracle oracle
+#rly pth gen vbstreetz oracle ibc-bandchain oracle oracle-
 
 # Create connection and channel from path
 echo "" > ./playground/relayer-create.log

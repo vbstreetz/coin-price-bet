@@ -7,7 +7,7 @@ user_gaia_addr=$(make bccli o='keys show -a user-gaia --keyring-backend test')
 vb_addr=$(make bccli o='keys show -a vb --keyring-backend test')
 
 curl --location --request \
-POST 'http://gaia-ibc-hackathon.node.bandchain.org:8000' \
+POST 'http://gaia-ibc-hackathon.node.bandchain.org:8000/' \
 --header 'Content-Type: application/javascript' \
 --data-raw '{
  "address": "'"$user_gaia_addr"'",

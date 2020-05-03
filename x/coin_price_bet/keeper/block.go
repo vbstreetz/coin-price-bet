@@ -5,9 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
-	"time"
 )
 
 // SetBlock saves the given block to the store without performing any validation.
@@ -21,18 +19,22 @@ func (k Keeper) SetBlockCoinPrice(ctx sdk.Context, blockId int64, coinId int64, 
 	if !store.Has(blockStoreId) {
 		types.Logger.Error(fmt.Sprintf("Block(%d) does not exists. Creating...", blockId))
 
-		blockTime := time.Now().Unix()
+		blockTime := ctx.BlockTime().Unix()
 		b := new(bytes.Buffer)
 		binary.Write(b, binary.LittleEndian, int64(blockId))
 		store.Set(types.BlockTimeStoreKey(uint64(blockTime)), b.Bytes()) // time: id
 		types.Logger.Info(fmt.Sprintf("Stored new block time %d", blockTime))
 
+    todayId := types.GetDayId(ctx.BlockTime().Unix())
+    dayCoinId := types.GetDayCoinId(todayId, coinId)
+    dayCoinStoreKey := types.DayCoinBlockTimesStoreKey(uint64(dayCoinId))
+
 		blockTimes := []int64{}
-		if blockTimesBytes := store.Get(types.BlockTimesStoreKey); blockTimesBytes != nil {
+		if blockTimesBytes := store.Get(dayCoinStoreKey); blockTimesBytes != nil {
 			k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &blockTimes)
 		}
 		blockTimes = append(blockTimes, blockTime)
-		store.Set(types.BlockTimesStoreKey, k.cdc.MustMarshalBinaryBare(blockTimes)) // [time, ...]
+		store.Set(dayCoinStoreKey, k.cdc.MustMarshalBinaryBare(blockTimes)) // [time, ...]
 		types.Logger.Info(fmt.Sprintf("Appended new block time %d", len(blockTimes)))
 
 		block = types.Block{}
@@ -48,15 +50,19 @@ func (k Keeper) SetBlockCoinPrice(ctx sdk.Context, blockId int64, coinId int64, 
 	types.Logger.Info(fmt.Sprintf("Stored new block %+v", block))
 }
 
+// Get prices for the last 3 days
 func (k Keeper) GetLatestCoinPriceGraph(ctx sdk.Context, coinId uint64) (*types.PriceGraph, error) {
 	store := ctx.KVStore(k.storeKey)
 
-	blockTimes := []uint64{}
-	if blockTimesBytes := store.Get(types.BlockTimesStoreKey); blockTimesBytes == nil {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "no times have been recorded")
-	} else {
-		k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &blockTimes)
-	}
+    todayId := types.GetDayId(ctx.BlockTime().Unix())
+    dayCoinId := types.GetDayCoinId(todayId, int64(coinId))
+    dayCoinStoreKey := types.DayCoinBlockTimesStoreKey(uint64(dayCoinId))
+
+  // todo, compute for last 3 days
+  blockTimes := []int64{}
+  if blockTimesBytes := store.Get(dayCoinStoreKey); blockTimesBytes != nil {
+    k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &blockTimes)
+  }
 
 	graph := &types.PriceGraph{}
 
@@ -67,7 +73,7 @@ func (k Keeper) GetLatestCoinPriceGraph(ctx sdk.Context, coinId uint64) (*types.
 
 	for _, blockTime := range blockTimes {
 		var blockId int64
-		if blockIdBytes := store.Get(types.BlockTimeStoreKey(blockTime)); blockIdBytes == nil {
+		if blockIdBytes := store.Get(types.BlockTimeStoreKey(uint64(blockTime))); blockIdBytes == nil {
 			types.Logger.Error(fmt.Sprintf("no block id has been recorded for time(%d)", blockTime))
 			continue
 		} else if err := binary.Read(bytes.NewReader(blockIdBytes), binary.LittleEndian, &blockId); err != nil {

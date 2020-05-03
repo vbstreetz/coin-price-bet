@@ -5,7 +5,6 @@ import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import del from 'del';
-import css from 'rollup-plugin-css-only';
 import postcss from 'rollup-plugin-postcss';
 import sveltePreprocessPostcss from 'svelte-preprocess-postcss';
 import json from '@rollup/plugin-json';
@@ -64,7 +63,6 @@ function createConfig({ output, inlineDynamicImports, plugins = [] }) {
     },
     plugins: [
       json({}),
-      css({ output: 'dist/build/extra.css' }),
       copy({
         targets: [
           { src: staticDir + '/**/!(__index.html)', dest: distDir },
@@ -77,21 +75,23 @@ function createConfig({ output, inlineDynamicImports, plugins = [] }) {
         ],
         copyOnce: true,
       }),
+
+      postcss({
+        extract: true,
+      }),
+
       svelte({
         // enable run-time checks when not in production
         dev: !production,
         hydratable: true,
         // we'll extract any component CSS out into
         // a separate file — better for performance
-        css: (css) => {
-          css.write(`${buildDir}/bundle.css`);
-        },
+        // css: (css) => {
+        //   css.write(`${buildDir}/bundle.css`);
+        // },
         preprocess: {
           style: sveltePreprocessPostcss(),
         },
-      }),
-      postcss({
-        extract: 'public/bundle.css',
       }),
 
       // If you have external dependencies installed from

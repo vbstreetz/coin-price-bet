@@ -1,5 +1,3 @@
-export const BETCHAIN_TRANSFER_CHANNEL = 'hmagzxrbfy';
-
 export const COINS = [
   "BTC",
   "ETH",
@@ -15,3 +13,9 @@ export const DAY_STATES = {
   DRAWING: 1,
   PAYOUT: 2
 };
+
+export const API_HOST =
+  window.location.hostname === 'localhost'
+    ? 'http://localhost:1317'
+    : 'https://witnet.tools/vb-chain';
+export const CHAIN_ID = 'vbstreetz';

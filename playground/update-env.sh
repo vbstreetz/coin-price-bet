@@ -8,9 +8,27 @@ echo $betchain_oracle_channel
 echo $bandchain_oracle_channel
 
 
-make bccli o="tx coinpricebet \
-set-channel ibc-bandchain coinpricebet $betchain_oracle_channel \
---from validator --keyring-backend test -y -b block"
+#make bccli o="tx coinpricebet \
+#set-channel ibc-bandchain coinpricebet $betchain_oracle_channel \
+#--from validator --keyring-backend test -y -b block"
+#make bccli o="tx coinpricebet \
+#set-channel band-cosmoshub transfer $betchain_transfer_channel \
+#--from validator --keyring-backend test -y -b block"
+
+
 make bccli o="tx coinpricebet \
 set-channel band-cosmoshub transfer $betchain_transfer_channel \
 --from validator --keyring-backend test -y -b block"
+
+make bccli o="tx coinpricebet \
+set-channel vbstreetz transfer $gaia_transfer_channel \
+--from validator --keyring-backend test -y -b block"
+
+make bccli o="tx coinpricebet \
+set-channel ibc-bandchain coinpricebet $betchain_oracle_channel \
+--from validator --keyring-backend test -y -b block"
+
+make bccli o="tx coinpricebet \
+set-channel vbstreetz oracle $bandchain_oracle_channel \
+--from validator --keyring-backend test -y -b block"
+

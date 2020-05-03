@@ -8,6 +8,7 @@ import bech32 from 'bech32';
 import bitcoinjs from 'bitcoinjs-lib';
 import bip32 from 'bip32';
 import bip39 from 'bip39';
+// import {PrivKeySecp256k1} from '@everett-protocol/cosmosjs/crypto';
 
 const BROADCAST_MAX_RETRIES = 10;
 const BROADCAST_RETRY_INTERVAL_SECONDS = 1;
@@ -111,6 +112,9 @@ export default class {
     const pubKeyValue = Buffer.from(this.getPublicKey(), 'hex').toString(
       'base64'
     );
+    // const pubKeyValue2 = (new PrivKeySecp256k1(Buffer.from(this.privateKey, 'hex'))).toPubKey().toBytes().toString("base64");
+    console.log(pubKeyValue);
+    // console.log(pubKeyValue2);
 
     // signature value
     const payload = JSON.stringify({
@@ -175,9 +179,9 @@ export default class {
     if (data) {
       opts.method = method.toUpperCase();
       opts.body = JSON.stringify(data);
-      opts.headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+      opts.headers = { // These cause cors issue
+        // Accept: 'application/json',
+        // 'Content-Type': 'application/json',
       };
     }
     const res = await fetch(`${this.host}${endpoint}`, opts);

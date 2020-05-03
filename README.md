@@ -1,10 +1,12 @@
-![](https://i.imgur.com/k9qHaBz.png)
+<div align="center">
+    <img src="https://i.imgur.com/OQ43FHX.png" width="500" />
+</div>
 
 ### 🚧 Work in Progress
 
-- Frontend is hosted at: http://144.202.100.245:3000
-- Dapp allows betting on the future(tomorrow) best performing crypto.
-- The crypto prices are sourced from a [Band Protocol Oracle](https://bandprotocol.com).
+- The project is a [Cosmos SDK](https://cosmos.network/sdk) Dapp that allows betting on the future(tomorrow's) best performing crypto.
+- Frontend demo is hosted at: https://coin-price-bet.netlify.app
+- The crypto prices are sourced from [Band Protocol Oracles](https://bandprotocol.com) via [IBC](https://cosmos.network/ibc).
 
-Project is an adaptation of [CoinPrice.bet](https://coinprice.bet) for the [Band Protocol IBC Gitcoin Hackathon](https://gitcoin.co/issue/bandprotocol/cross-chain-hackthon/3/4229).
-
+Project is a submission to the [Band Protocol IBC Gitcoin Hackathon](https://gitcoin.co/issue/bandprotocol/cross-chain-hackthon/3/4229).
+It's adapted from [CoinPrice.bet](https://coinprice.bet) which runs on Ethereum.

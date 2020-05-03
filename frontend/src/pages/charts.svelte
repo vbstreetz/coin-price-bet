@@ -1,6 +1,6 @@
 <script>
   import {onMount} from 'svelte';
-  import account from '../utils/account';
+  import {coinPriceBetBlockchain} from '../utils/blockchains';
   import Chart from 'svelte-frappe-charts';
   import { writable } from 'svelte/store';
   import moment from 'moment';
@@ -34,7 +34,7 @@
   }
 
   async function fetchData(coin = 0) {
-    const { times, prices } = await account.query(`/coinpricebet/latest-coin-prices/${coin}`);
+    const { times, prices } = await coinPriceBetBlockchain.query(`/coinpricebet/latest-coin-prices/${coin}`);
     data.set({
       times: times.map((s) => moment.unix(parseInt(s)).format('HH:mm:ss')),
       prices: prices.map((s) => parseInt(s) / 1000000),

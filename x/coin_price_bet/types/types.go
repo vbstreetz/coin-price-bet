@@ -11,8 +11,13 @@ var Logger log.Logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 var BUY_GOLD_PACKET_CLIENT_ID_PREFIX string = "ORDER:"
 var COMPLETE_COIN_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX string = "COIN_PRICE_UPDATE_REQUEST"
 
-var BANDCHAIN_ID string = "ibc-bandchain"
-var BANDCHAIN_PORT string = "coinpricebet"
+var VB_CHAIN_ID string = "vbstreetz"
+var GAIA_CHAIN_ID string = "band-cosmoshub"
+var BAND_CHAIN_ID string = "ibc-bandchain"
+
+var TRANSFER_PORT string = "transfer"
+var ORACLE_DATA_REQUEST_PORT string = "coinpricebet"
+var ORACLE_DATA_RECEIVE_PORT string = "oracle"
 
 var MULTIPLIER int64 = 1000000
 
@@ -44,19 +49,14 @@ type Block struct {
 	Prices []int64 `json:"prices"`
 }
 
-func GetCoins() []string {
-	return []string{
-		"BTC",
-		"ETH",
-		"LTC",
-		"BAND",
-		"ATOM",
-		"LINK",
-		"XTZ",
-	}
-}
+type DayState uint8
 
-//
+const (
+	BET DayState = iota
+	DRAWING
+	PAYOUT
+	INVALID
+)
 
 type PriceGraph struct {
 	Times  []int64 `json:"times"`
@@ -64,15 +64,17 @@ type PriceGraph struct {
 }
 
 type Info struct {
-	FirstDay uint64 `json:"firstDay"`
+	FirstDay                uint64 `json:"firstDay"`
+	BetchainTransferChannel string `json:"betchainTransferChannel"`
+	GaiaTransferChannel     string `json:"gaiaTransferChannel"`
 }
 
 type DayInfo struct {
 	GrandPrizeAmount uint64   `json:"grandPrizeAmount"`
 	AtomPriceCents   uint8    `json:"atomPriceCents"`
-	CoinsPerf        []uint8 `json:"coinsPerf"`
+	CoinsPerf        []uint8  `json:"coinsPerf"`
 	CoinsVolume      []uint64 `json:"coinsVolume"`
-	State uint8            `json:"state"`
+	State            uint8    `json:"state"`
 }
 
 type MyInfo struct {
@@ -85,4 +87,21 @@ type MyDayInfo struct {
 	CoinPredictedWinAmount []uint64 `json:"coinPredictedWinAmount"`
 	TotalBetAmount         uint64   `json:"totalBetAmount"`
 	TotalWinAmount         uint64   `json:"totalWinAmount"`
+}
+
+//
+
+// Structure with coin bets in a contest period (e.g. day)
+type BetCoinDay struct {
+	TotalAmount uint64            // ordered ranking after result has been resolved
+	Bets        map[string]uint64 // address => uint64
+	Winners     map[string]bool   // address => bool
+}
+
+// Structure with all the current bets information in a contest period (e.g. day)
+type BetDay struct {
+	GrandPrize      uint64            // total prize for a day
+	Ranking         []uint8           // ordered ranking after result has been resolved
+	Bets            map[string]uint64 // address => uint64
+	ResultCompleted bool
 }

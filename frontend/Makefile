@@ -1,5 +1,5 @@
 run:
-	@npm run dev
+	@rm -rf dist && npm run dev
 
 deploy:
 	@npm run deploy:netlify

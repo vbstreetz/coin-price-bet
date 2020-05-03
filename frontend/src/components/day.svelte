@@ -1,19 +1,19 @@
 <script>
   import {onMount} from 'svelte';
+  import {get} from 'svelte/store';
   import moment from 'moment';
   import Clock from '../components/clock.svelte';
-  import account from '../utils/account';
+  import {coinPriceBetBlockchain} from '../utils/blockchains';
   import {fromMicro, toMicro} from '../utils/cosmos';
   import {formatFiat} from '../utils';
   import sl from '../utils/sl';
-  import {BETCHAIN_TRANSFER_CHANNEL, COINS, DAY_STATES} from '../config';
+  import {address, info} from '../stores/blockchains';
+  import {COINS, DAY_STATES} from '../config';
 
-  export let address;
-  export let firstDay;
   export let day;
   export let label;
 
-  const daySinceEpoch = day.diff(moment.unix(firstDay), 'days');
+  const daySinceEpoch = day.diff(moment.unix(get(info).firstDay), 'days');
   const dateLabel = day.format('YYYY-MM-DD');
 
   let dayInfo;
@@ -31,7 +31,7 @@
   });
 
   async function loadDayInfo() {
-    dayInfo = await account.query(`/coinpricebet/day-info/${daySinceEpoch}`);
+    dayInfo = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}`);
 
     canBet = dayInfo.state === DAY_STATES.BET;
     isDrawing = dayInfo.state === DAY_STATES.DRAWING;
@@ -39,8 +39,9 @@
   }
 
   async function loadMyDayInfo() {
-    if (address) {
-      myDayInfo = await account.query(`/coinpricebet/day-info/${daySinceEpoch}/${address}`);
+    const $address= get(address);
+    if ($address) {
+      myDayInfo = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}/${$address}`);
     }
   }
 
@@ -50,8 +51,8 @@
     const atom = event.target.atom.value;
 
     try {
-      await account.tx('post', '/coinpricebet/place-bet', {
-        amount: `${toMicro(atom)} transfer/${BETCHAIN_TRANSFER_CHANNEL}/uatom`,
+      await coinPriceBetBlockchain.tx('post', '/coinpricebet/place-bet', {
+        amount: `${toMicro(atom)} transfer/${$info.betchainTransferChannel}/uatom`,
         coinId: COINS.indexOf(coin)
       });
       sl('success', 'WAITING FOR CONFIRMATION...');
@@ -82,7 +83,7 @@
               {#if canBet}
                 Predictions are open
               {:else if isDrawing}
-                Waiting for results
+                Drawing... <!-- Waiting for results -->
               {:else}
                 Finalized
               {/if}
@@ -95,7 +96,14 @@
             {/if}
           </div>
           <div class="row field">
-            <header><h1>Current grand prize</h1></header>
+            <header>
+              <h1>
+                {#if canBet}
+                  Current
+                {/if}
+                grand prize
+              </h1>
+            </header>
             <div class="grand-prize">
               <div class="atom">{fromMicro(dayInfo.grandPrizeAmount)}<span class="currency">ATOM</span></div>
               <ul class="fiat">
@@ -154,7 +162,7 @@
                         <td class="text-left">
                           {coin}
                           {#if !canBet}
-                          - {dayInfo.coinsPerf[i] || 0}%
+                            - {dayInfo.coinsPerf[i] || 0}%
                           {/if}
                         </td>
                         {#if myDayInfo}
@@ -199,12 +207,12 @@
             </div>
           {:else if isDrawing}
             {#if myDayInfo}
-              <div>Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} ATOM</div>
+              <div class="mt-4">Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} ATOM</div>
               <div>Your predicted total win amount: {fromMicro(myDayInfo.totalWinAmount)} ATOM</div>
             {/if}
           {:else }
             {#if myDayInfo}
-              <div>Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} ATOM</div>
+              <div class="mt-4">Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} ATOM</div>
               <div>Your total win amount: {fromMicro(myDayInfo.totalWinAmount)} ATOM</div>
             {/if}
           {/if}
@@ -255,9 +263,17 @@
     border-color: hsl(0, 0%, 96%);
   }
 
+  :global(.dark) .day-divider-dot-inner {
+    border-color: #333;
+  }
+
   .day-divider-dot-inner--active {
-    background-color: hsl(171, 100%, 41%);
-    border-color: hsl(171, 100%, 41%);
+    background-color: var(--dot-active-color);
+    border-color: var(--dot-active-color);
+  }
+
+  :global(.dark) .day-divider-dot-inner--active {
+    border-color: #333;
   }
 
   .day-body {
@@ -278,6 +294,12 @@
     padding-left: 0;
   }
 
+  :global(.dark) .day-card {
+    background: var(--dark-1);
+    border: none;
+    box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);
+  }
+
   .day-card:before {
     border-top: 1px solid #ccc;
     content: "";
@@ -288,8 +310,16 @@
     top: 12px;
   }
 
+  :global(.dark) .day-card:before {
+    border-color: var(--border-color);
+  }
+
   .day-card .column:not(:last-child) {
     border-right: 1px solid #ddd;
+  }
+
+  :global(.dark) .day-card .column:not(:last-child) {
+    border-color: #333;
   }
 
   .day-card .column:first-child {
@@ -314,7 +344,7 @@
   }
 
   .day-card .field header {
-    color: #666;
+    color: #888;
     display: block;
     font-weight: 700;
     text-transform: uppercase;
@@ -328,7 +358,7 @@
   }
 
   .day-card .field header h1.day {
-    color: #666;
+    color: #888;
   }
 
   .day-card .field header .date {
@@ -359,7 +389,7 @@
   }
 
   .grand-prize .fiat {
-    color: #666;
+    color: #888;
     font-size: 1.1rem;
     list-style-type: none;
     padding: 0;

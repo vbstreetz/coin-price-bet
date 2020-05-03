@@ -63,8 +63,8 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 	askCount := int64(1)
 	minCount := int64(1)
 
-	port := types.BANDCHAIN_PORT
-	channelID, err := keeper.GetChannel(ctx, types.BANDCHAIN_ID, port)
+	port := types.ORACLE_DATA_REQUEST_PORT
+	channelID, err := keeper.GetChannel(ctx, types.BAND_CHAIN_ID, port)
 
 	if err != nil {
 		return nil, sdkerrors.Wrapf(
@@ -222,36 +222,38 @@ func handleOracleCompleteCoinPriceUpdate(ctx sdk.Context, packet oracle.OracleRe
 //
 
 func handlePlaceBet(ctx sdk.Context, msg MsgPlaceBet, keeper Keeper) (*sdk.Result, error) {
-	// 	if err := keeper.EscrowCollateral(ctx, msg.Bettor, msg.Amount); err != nil {
-	// 		return nil, err
-	// 	}
-	//
-	// 	amount := msg.Amount[0].Amount
-	// 	bettorAddress := msg.Better.String()
-	//
-	// 	types.Logger.Info(fmt.Sprintf("Updating mappings due to %s: %d", bettorAddress, amount))
-	// 	store := ctx.KVStore(keeper.storeKey)
-	//
-	// 	betDayId := keeper.GetDayId()
-	// 	betCoinDayId := keeper.GetCoinDayId(betDayId, msg.CoinId)
-	//
-	// 	// Upsert bet coin+day mappings
-	// 	betCoinDay := &BetCoinDay{}
-	// 	if betCoinDayBytes := store.Get(betCoinDayId); betCoinDayBytes != nil {
-	// 		k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &betCoinDay)
-	// 	}
-	// 	betCoinDay.TotalAmount += amount
-	// 	betCoinDay.Bets[bettorAddress] += amount
-	// 	betCoinDay.PaidBettors[bettorAddress] = false
-	// 	store.Set(betCoinDayId, k.cdc.MustMarshalBinaryBare(betCoinDay))
-	//
-	// 	// Upsert bet day mappings
-	// 	betDay := &BetDay{}
-	// 	if betDayBytes := store.Get(betDayId); betDayBytes != nil {
-	// 		k.cdc.MustUnmarshalBinaryBare(blockTimesBytes, &betDay)
-	// 	}
-	// 	betDay.GrandPrize += amount
-	// 	store.Set(betDayId, k.cdc.MustMarshalBinaryBare(betDay))
+	if err := keeper.EscrowCollateral(ctx, msg.Bettor, msg.Amount); err != nil {
+		return nil, err
+	}
+
+	amount := msg.Amount[0].Amount
+	bettorAddress := msg.Bettor.String()
+
+	types.Logger.Info(fmt.Sprintf("Updating mappings due to %s: %d", bettorAddress, amount))
+
+	store := ctx.KVStore(keeper.storeKey)
+	betDayId := types.GetDayId()
+	betDayCoinId := types.GetDayCoinId(uint64(betDayId), uint64(msg.CoinId))
+	betDayStoreKey := types.DayInfoStoreKey(betDayId)
+	betDayCoinStoreKey := types.DayCoinInfoStoreKey(betDayCoinId)
+
+	// Upsert bet day+coin mappings
+	betDayCoin := &BetCoinDay{}
+	if b := store.Get(betDayCoinStoreKey); b != nil {
+		keeper.cdc.MustUnmarshalBinaryBare(b, &betDayCoin)
+	}
+	betDayCoin.TotalAmount += amount
+	betDayCoin.Bets[bettorAddress] += amount
+	betDayCoin.PaidBettors[bettorAddress] = false
+	store.Set(betDayCoinStoreKey, keeper.cdc.MustMarshalBinaryBare(betDayCoin))
+
+	// Upsert bet day mappings
+	betDay := &BetDay{}
+	if b := store.Get(betDayStoreKey); b != nil {
+		keeper.cdc.MustUnmarshalBinaryBare(b, &betDay)
+	}
+	betDay.GrandPrize += amount
+	store.Set(betDayStoreKey, keeper.cdc.MustMarshalBinaryBare(betDay))
 
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }

@@ -1,77 +1,88 @@
 <script>
   import moment from 'moment';
   import {onMount} from 'svelte';
+  import {derived, get} from 'svelte/store';
   import Day from '../components/day.svelte';
-  import account from '../utils/account';
-  import {fromMicro} from '../utils/cosmos';
-  import {BETCHAIN_TRANSFER_CHANNEL, COINS} from '../config';
+  import {coinPriceBetBlockchain, gaiaBlockchain, bandBlockchain} from '../utils/blockchains';
+  import {address, info, myInfo, balances as allBalances, load, disconnectAccount, connectAccount} from '../stores/blockchains';
+  import {fromMicro, toMicro} from '../utils/cosmos';
+  import sl from '../utils/sl';
+  import xhr from '../utils/xhr';
+  import {COINS} from '../config';
 
-  let address;
-  let balance = 0;
-  let info;
-  let myInfo;
-
-  const tomorrow = moment.utc().add(1);
+  const tomorrow = moment.utc().add(1, 'days');
   const today = moment.utc();
-  const yesterday = moment.utc().subtract(1);
+  const yesterday = moment.utc().subtract(1, 'days');
   const days = [
     {label: 'Tomorrow', date: tomorrow},
     {label: 'Today', date: today},
     {label: 'Yesterday', date: yesterday}
   ];
+  const balances = derived(allBalances, function({coinPriceBet, gaia}) {
+    const $info = get(info);
+    const b = {}
 
-  onMount(async function () {
-    await Promise.all([loadInfo(), loadAccount()]);
+    if (coinPriceBet) {
+      for (let i = 0; i < coinPriceBet.length; i++) {
+        const coin = coinPriceBet[i];
+        if (~coin.denom.search($info.betchainTransferChannel)) {
+          b.coinPriceBet = coin.amount;
+          break;
+        }
+      }
+    }
+
+    if (gaia) {
+      for (let i = 0; i < gaia.length; i++) {
+        const coin = gaia[i];
+        if (coin.denom === 'uatom') {
+          b.gaia = coin.amount;
+          break;
+        }
+      }
+    }
+
+    return b;
   });
 
-  async function connectAccount() {
-    const mnemonic = prompt('Enter mnemonic:');
-    if (!mnemonic) {
-      return;
+  onMount(load);
+
+  async function rechargeFromFaucet() {
+    await xhr('post', '/gaia-faucet/', {
+      "address": get(address),
+      "chain-id": "band-cosmoshub"
+    });
+    sl('success', 'Waiting for confirmation...');
+  }
+
+  async function rechargeFromGaia() {
+    // const amount = parseInt(prompt('Amount?'));
+    // if (!amount) return sl('error', 'Invalid amount');
+
+    const amount = 10;
+
+    const $address = get(address);
+    const $info = get(info);
+    // const channel = $info.gaiaTransferChannel;
+    const channel = $info.betchainTransferChannel;
+    const port = 'transfer';
+
+    try {
+      await gaiaBlockchain.tx('post', `/ibc/ports/${port}/channels/${channel}/transfer`, {
+        "amount": [
+          {
+            "denom": "uatom",
+            // "amount": `${toMicro(amount).toString()}transfer/${$info.betchainTransferChannel}/uatom`
+            "amount": `${toMicro(amount).toString()}`
+          }
+        ],
+        "receiver": get(address),
+        // "source": true
+      });
+      sl('success', 'WAITING FOR CONFIRMATION...');
+    } catch (e) {
+      sl('error', e);
     }
-    loadAccount(mnemonic);
-  }
-
-  function disconnectAccount() {
-    account.disconnect();
-    address = null;
-  }
-
-  async function loadInfo() {
-    info = await account.query(`/coinpricebet/info`);
-  }
-
-  async function loadAccount(mnemonic) {
-    if (mnemonic) {
-      if (!await account.loadPrivateKeyFromMnemonic(mnemonic)) {
-        return;
-      }
-    } else {
-      if (!await account.loadPrivateKeyFromCache()) {
-        return;
-      }
-    }
-    address = account.deriveAddress();
-    await Promise.all([
-      account.loadAccount(),
-      loadBalance(),
-      loadMyInfo(),
-    ]);
-  }
-
-  async function loadBalance() {
-    const coins = await account.query(`/bank/balances/${address}`);
-    for (let i = 0; i < coins.length; i++) {
-      const coin = coins[i];
-      if (~coin.denom.search(`transfer/${BETCHAIN_TRANSFER_CHANNEL}/uatom`)) {
-        balance = coin.amount;
-        break;
-      }
-    }
-  }
-
-  async function loadMyInfo() {
-    myInfo = await account.query(`/coinpricebet/info/${address}`);
   }
 </script>
 
@@ -79,20 +90,21 @@
   <div class="flex">
     <h1 class="main-heading flex-grow">BET TODAY,<br/>THE BEST CRYPTO OF TOMORROW, AND WIN!</h1>
 
-    {#if address}
+    {#if $address}
       <div class="flex flex-col text-sm">
-        <div>Account: {address}</div>
-        <div>Balance: {fromMicro(balance)}atom</div>
-        {#if myInfo}
-        <div>Total Bets: {fromMicro(myInfo.totalBetsAmount)}atom</div>
-        <div>Total Wins: {fromMicro(myInfo.totalWinsAmount)}atom</div>
+        <div>Account: {$address}</div>
+        <div>Balance: {fromMicro($balances.gaia || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={rechargeFromFaucet}>recharge from faucet</span></div>
+        <div>Balance: {fromMicro($balances.coinPriceBet || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeFromGaia}>recharge from gaia</span></div>
+        {#if $myInfo}
+        <div>Total Bets: {fromMicro($myInfo.totalBetsAmount)}atom</div>
+        <div>Total Wins: {fromMicro($myInfo.totalWinsAmount)}atom</div>
         {/if}
       </div>
-      <button class="button is-light is-small ml-2" on:click={disconnectAccount}>
+      <button class="button is-primary is-small ml-2" on:click={disconnectAccount}>
         DISCONNECT
       </button>
     {:else}
-      <button class="button is-light is-small" on:click={connectAccount}>
+      <button class="button is-primary is-small" on:click={connectAccount}>
         CONNECT
       </button>
     {/if}
@@ -101,7 +113,9 @@
   {#if info}
     <div class="main-container">
       {#each days as day}
-        <Day firstDay={info.firstDay} day={day.date} label={day.label} address={address} />
+        {#if $info}
+        <Day day={day.date} label={day.label} />
+        {/if}
       {/each}
     </div>
   {/if}
@@ -122,7 +136,7 @@
   .main-container:before {
     right: auto;
     left: 47px;
-    background: rgba(0, 0, 0, .12);
+    background: var(--border-color);
     bottom: 0;
     content: "";
     height: 100%;

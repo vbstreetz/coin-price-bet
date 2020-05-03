@@ -1,45 +1,17 @@
 <script>
   import { onMount } from 'svelte';
-  import account from '../utils/account';
+  import {get} from 'svelte/store';
+  import {coinPriceBetBlockchain} from '../utils/blockchains';
+  import {address, info, balances, load, loadBalance, disconnectAccount, connectAccount} from '../stores/blockchains';
   import sl from '../utils/sl';
-  import {BETCHAIN_TRANSFER_CHANNEL} from '../config';
 
-  let address;
-  let balances = [];
-
-  onMount(async function () {
-    if (await account.loadPrivateKeyFromCache()) {
-      await loadAccount();
-    }
-  });
-
-  async function connectAccount() {
-    const mnemonic = prompt('Enter mnemonic:');
-    if (!mnemonic) {return;}
-    if (await account.loadPrivateKeyFromMnemonic(mnemonic)) {
-      await loadAccount();
-    }
-  }
-
-  function disconnectAccount() {
-    account.disconnect();
-    address = null;
-  }
-
-  async function loadAccount() {
-    address = account.deriveAddress();
-    await account.loadAccount();
-    await onLoadBalance();
-  }
-
-  async function onLoadBalance() {
-    balances = await account.query(`/bank/balances/${address}`);
-  }
+  onMount(load);
 
   async function onBuyGold() {
+    const $info = get(info);
     try {
-      await account.tx('post', '/coinpricebet/buy', {
-        amount: `1000000000transfer/${BETCHAIN_TRANSFER_CHANNEL}/uatom`
+      await coinPriceBetBlockchain.tx('post', '/coinpricebet/buy', {
+        amount: `1000000000transfer/${$info.betchainTransferChannel}/uatom`
       });
       sl('success', 'WAITING FOR CONFIRMATION...');
     } catch (e) {
@@ -54,12 +26,12 @@
 
 <div class="flex flex-grow flex-col">
   <div class="flex mb-5 items-center">
-    <h1 class="main-heading flex-grow">GOLDCDP</h1>
-    {#if address}
+    <h1 class="main-heading flex-grow">GOLD CDP</h1>
+    {#if $address}
       <button class="button is-light is-small" on:click={onBuyGold}>
         BUY GOLD
       </button>
-      <button class="button is-light is-small ml-2" on:click={onLoadBalance}>
+      <button class="button is-light is-small ml-2" on:click={loadBalance}>
         REFRESH BALANCE
       </button>
       <button class="button is-light is-small ml-2" on:click={disconnectAccount}>
@@ -72,14 +44,16 @@
     {/if}
   </div>
 
-  {#if address}
+  {#if $address}
     <div class="mb-5">
-      <div>Account: {address}</div>
+      <div>Account: {$address}</div>
       <div>Balance:</div>
       <div class="ml-5">
-        {#each balances as c}
-          <div>{c.amount} {c.denom}</div>
-        {/each}
+        {#if $balances.coinPriceBet}
+          {#each $balances.coinPriceBet as c}
+            <div>{c.amount} {c.denom}</div>
+          {/each}
+        {/if}
       </div>
     </div>
   {/if}
