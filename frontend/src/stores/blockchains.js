@@ -44,7 +44,7 @@ async function loadAccount(mnemonic) {
   gaiaBlockchain.deriveAddress();
 
   bandBlockchain.loadPrivateKeyFromCache();
-  // bandBlockchain.deriveAddress('band');
+  bandBlockchain.deriveAddress('band');
 
   await Promise.all([
     coinPriceBetBlockchain.loadAccount(),
@@ -59,7 +59,7 @@ export async function loadBalance() {
   balances.set({
     coinPriceBet: await coinPriceBetBlockchain.query(`/bank/balances/${get(address)}`),
     gaia: await gaiaBlockchain.query(`/bank/balances/${get(address)}`),
-    // band: await bandBlockchain.query(`/bank/balances/${bandBlockchain.deriveAddress('band')}`),
+    // band: await bandBlockchain.query(`/bank/balances/${bandBlockchain.address}`),
   });
 }
 

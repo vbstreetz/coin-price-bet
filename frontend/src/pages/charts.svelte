@@ -34,9 +34,9 @@
   }
 
   async function fetchData(coin = 0) {
-    const { times, prices } = await coinPriceBetBlockchain.query(`/coinpricebet/latest-coin-prices/${coin}`);
+    const prices = await coinPriceBetBlockchain.query(`/coinpricebet/latest-coin-prices/${coin}`);
     data.set({
-      times: times.map((s) => moment.unix(parseInt(s)).format('HH:mm:ss')),
+      times: new Array(prices.length).fill(0),
       prices: prices.map((s) => parseInt(s) / 1000000),
     });
   }

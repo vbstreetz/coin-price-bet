@@ -75,11 +75,11 @@ func GetCmdLatestCoinPrices(queryRoute string, cdc *codec.Codec) *cobra.Command 
 				return nil
 			}
 
-			var graph types.PriceGraph
-			if err := cdc.UnmarshalJSON(res, &graph); err != nil {
+			var prices []int64
+			if err := cdc.UnmarshalJSON(res, &prices); err != nil {
 				return err
 			}
-			return cliCtx.PrintOutput(graph)
+			return cliCtx.PrintOutput(prices)
 		},
 	}
 }

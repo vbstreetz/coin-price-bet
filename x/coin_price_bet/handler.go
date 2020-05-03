@@ -20,6 +20,7 @@ import (
 func NewHandler(keeper Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
+		// types.Logger.Info(fmt.Sprintf("msg: %+v", msg))
 		switch msg := msg.(type) {
 		case MsgBuyGold:
 			return handleBuyGold(ctx, msg, keeper)
@@ -27,7 +28,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 			return handleSetSourceChannel(ctx, msg, keeper)
 		case MsgPlaceBet:
 			return handlePlaceBet(ctx, msg, keeper)
-		// todo ensure msg is from badnchain
+		// todo: validate msg is from bandchain
 		case channeltypes.MsgPacket:
 			var responsePacket oracle.OracleResponsePacketData
 			if err := types.ModuleCdc.UnmarshalJSON(msg.GetData(), &responsePacket); err == nil {
@@ -40,14 +41,10 @@ func NewHandler(keeper Keeper) sdk.Handler {
 	}
 }
 
-//
-
 func handleSetSourceChannel(ctx sdk.Context, msg MsgSetSourceChannel, keeper Keeper) (*sdk.Result, error) {
 	keeper.SetChannel(ctx, msg.ChainName, msg.SourcePort, msg.SourceChannel)
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }
-
-//
 
 func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result, error) {
 	if err := keeper.EscrowCollateral(ctx, msg.Buyer, msg.Amount); err != nil {
@@ -108,8 +105,6 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 	}
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }
-
-//
 
 func handleOracleRespondPacketData(ctx sdk.Context, packet oracle.OracleResponsePacketData, keeper Keeper) (*sdk.Result, error) {
 	logger.Info(packet.ClientID)
@@ -208,52 +203,41 @@ func handleOracleCompleteCoinPriceUpdate(ctx sdk.Context, packet oracle.OracleRe
 	if err != nil {
 		return err
 	}
-	price := result.Px
+	price := int64(result.Px)
 
 	logger.Info(fmt.Sprintf("Coin(%s) price(%d) time(%d)", coin, price, blockId))
 
-	keeper.SetBlockCoinPrice(ctx, int64(blockId), coinId, int64(price))
-
-	// Do any payouts for yesterday
+	keeper.SetLatestCoinPrice(ctx, coinId, price)
+	keeper.AppendTodayCoinPrice(ctx, coinId, price)
 
 	return nil
 }
 
-//
-
 func handlePlaceBet(ctx sdk.Context, msg MsgPlaceBet, keeper Keeper) (*sdk.Result, error) {
+	types.Logger.Info("Placing bet")
+
 	if err := keeper.EscrowCollateral(ctx, msg.Bettor, msg.Amount); err != nil {
 		return nil, err
 	}
 
-	amount := msg.Amount[0].Amount
+	amount := msg.Amount[0].Amount.Uint64()
 	bettorAddress := msg.Bettor.String()
 
 	types.Logger.Info(fmt.Sprintf("Updating mappings due to %s: %d", bettorAddress, amount))
 
-	store := ctx.KVStore(keeper.storeKey)
-	betDayId := types.GetDayId()
-	betDayCoinId := types.GetDayCoinId(uint64(betDayId), uint64(msg.CoinId))
-	betDayStoreKey := types.DayInfoStoreKey(betDayId)
-	betDayCoinStoreKey := types.DayCoinInfoStoreKey(betDayCoinId)
+	betDayId := types.GetDayId(ctx.BlockTime().Unix())
 
 	// Upsert bet day+coin mappings
-	betDayCoin := &BetCoinDay{}
-	if b := store.Get(betDayCoinStoreKey); b != nil {
-		keeper.cdc.MustUnmarshalBinaryBare(b, &betDayCoin)
-	}
+	betDayCoin := keeper.GetDayCoinInfo(ctx, betDayId, int64(msg.CoinId))
 	betDayCoin.TotalAmount += amount
 	betDayCoin.Bets[bettorAddress] += amount
 	betDayCoin.PaidBettors[bettorAddress] = false
-	store.Set(betDayCoinStoreKey, keeper.cdc.MustMarshalBinaryBare(betDayCoin))
+	keeper.SetDayCoinInfo(ctx, betDayId, int64(msg.CoinId), betDayCoin)
 
 	// Upsert bet day mappings
-	betDay := &BetDay{}
-	if b := store.Get(betDayStoreKey); b != nil {
-		keeper.cdc.MustUnmarshalBinaryBare(b, &betDay)
-	}
+	betDay := keeper.GetDayInfo(ctx, betDayId)
 	betDay.GrandPrize += amount
-	store.Set(betDayStoreKey, keeper.cdc.MustMarshalBinaryBare(betDay))
+	keeper.SetDayInfo(ctx, betDayId, betDay)
 
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }

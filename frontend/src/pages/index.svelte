@@ -59,20 +59,19 @@
     // const amount = parseInt(prompt('Amount?'));
     // if (!amount) return sl('error', 'Invalid amount');
 
-    const amount = 10;
+    const amount = 1;
 
     const $address = get(address);
     const $info = get(info);
-    // const channel = $info.gaiaTransferChannel;
-    const channel = $info.betchainTransferChannel;
+    const channel = $info.gaiaTransferChannel;
+    // const channel = $info.betchainTransferChannel;
     const port = 'transfer';
 
     try {
       await gaiaBlockchain.tx('post', `/ibc/ports/${port}/channels/${channel}/transfer`, {
         "amount": [
           {
-            "denom": "uatom",
-            // "amount": `${toMicro(amount).toString()}transfer/${$info.betchainTransferChannel}/uatom`
+            "denom": `transfer/${$info.betchainTransferChannel}/uatom`,
             "amount": `${toMicro(amount).toString()}`
           }
         ],

@@ -162,7 +162,7 @@
                         <td class="text-left">
                           {coin}
                           {#if !canBet}
-                            - {dayInfo.coinsPerf[i] || 0}%
+                            <small class="text-xs">{fromMicro(dayInfo.coinsPerf[i] || 0).toFixed(2)}%</small>
                           {/if}
                         </td>
                         {#if myDayInfo}

@@ -58,44 +58,11 @@ const (
 	INVALID
 )
 
-type PriceGraph struct {
-	Times  []int64 `json:"times"`
-	Prices []int64 `json:"prices"`
-}
-
-type Info struct {
-	FirstDay                uint64 `json:"firstDay"`
-	BetchainTransferChannel string `json:"betchainTransferChannel"`
-	GaiaTransferChannel     string `json:"gaiaTransferChannel"`
-}
-
-type DayInfo struct {
-	GrandPrizeAmount uint64   `json:"grandPrizeAmount"`
-	AtomPriceCents   uint8    `json:"atomPriceCents"`
-	CoinsPerf        []uint8  `json:"coinsPerf"`
-	CoinsVolume      []uint64 `json:"coinsVolume"`
-	State            uint8    `json:"state"`
-}
-
-type MyInfo struct {
-	TotalBetsAmount uint64 `json:"totalBetsAmount"`
-	TotalWinsAmount uint64 `json:"totalWinsAmount"`
-}
-
-type MyDayInfo struct {
-	CoinBetTotalAmount     []uint64 `json:"coinBetTotalAmount"`
-	CoinPredictedWinAmount []uint64 `json:"coinPredictedWinAmount"`
-	TotalBetAmount         uint64   `json:"totalBetAmount"`
-	TotalWinAmount         uint64   `json:"totalWinAmount"`
-}
-
-//
-
 // Structure with coin bets in a contest period (e.g. day)
-type BetCoinDay struct {
+type BetDayCoin struct {
 	TotalAmount uint64            // ordered ranking after result has been resolved
 	Bets        map[string]uint64 // address => uint64
-	Winners     map[string]bool   // address => bool
+	PaidBettors map[string]bool   // address => bool
 }
 
 // Structure with all the current bets information in a contest period (e.g. day)
