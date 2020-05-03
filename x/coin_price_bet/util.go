@@ -26,7 +26,7 @@ func requestCoinPrice(ctx sdk.Context, keeper Keeper, blockId int64, coinId int6
 	if err != nil {
 		return sdkerrors.Wrapf(
 			sdkerrors.ErrUnknownRequest,
-			"not found channel to bandchain",
+			"not found channel to ibc-bandchain",
 		)
 	}
 
@@ -34,7 +34,7 @@ func requestCoinPrice(ctx sdk.Context, keeper Keeper, blockId int64, coinId int6
 	if !found {
 		return sdkerrors.Wrapf(
 			sdkerrors.ErrUnknownRequest,
-			"unknown channel %s port coin_price_bet",
+			"unknown channel %s port coinpricebet",
 			channelID,
 		)
 	}
