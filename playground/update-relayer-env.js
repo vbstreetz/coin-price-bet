@@ -6,7 +6,7 @@ const re1 = new RegExp(
   "Channel created: \\[band-consumer\\]chan{(\\w+)}port{transfer} -> \\[band-cosmoshub\\]chan{(\\w+)}port{transfer}"
 );
 const re2 = new RegExp(
-  "Channel created: \\[band-consumer\\]chan{(\\w+)}port{oracle} -> \\[ibc-bandchain\\]chan{(\\w+)}port{oracle}"
+  "Channel created: \\[band-consumer\\]chan{(\\w+)}port{coinpricebet} -> \\[ibc-bandchain\\]chan{(\\w+)}port{oracle}"
 );
 
 const env = {};

@@ -23,5 +23,5 @@ then
   bcd collect-gentxs
 
   # Run chain
-  bcd start --rpc.laddr=tcp://0.0.0.0:26657 --pruning=nothing
+  # bcd start --rpc.laddr=tcp://0.0.0.0:26657 --pruning=nothing
 fi

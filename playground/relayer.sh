@@ -30,7 +30,7 @@ rly lite init band-cosmoshub -f
 
 # Create path(specific connection between chain)
 rly pth gen  band-consumer transfer band-cosmoshub transfer transfer
-rly pth gen  band-consumer oracle ibc-bandchain oracle oracle
+rly pth gen  band-consumer coinpricebet ibc-bandchain oracle oracle
 
 # Create connection and channel from path
 echo "" > ./playground/relayer-create.log
