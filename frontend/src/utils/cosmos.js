@@ -113,7 +113,7 @@ export default class {
       'base64'
     );
     // const pubKeyValue2 = (new PrivKeySecp256k1(Buffer.from(this.privateKey, 'hex'))).toPubKey().toBytes().toString("base64");
-    console.log(pubKeyValue);
+    // console.log(pubKeyValue);
     // console.log(pubKeyValue2);
 
     // signature value

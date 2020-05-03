@@ -1,6 +1,6 @@
 import NProgress from 'nprogress';
 import Cosmos from './cosmos';
-import {API_HOST, CHAIN_ID} from '../config';
+import {API_HOST} from '../config';
 
 export const coinPriceBetBlockchain =  new (class extends Cosmos {
   async xhr(...args) {
@@ -14,7 +14,7 @@ export const coinPriceBetBlockchain =  new (class extends Cosmos {
   }
 })({
   host: API_HOST + '/vb-rest',
-  chainId: CHAIN_ID,
+  chainId: 'vbstreetz',
   gasInfo: { minFee: '525000', denom: 'stake' }, //  🤔
 });
 
@@ -29,7 +29,7 @@ export const gaiaBlockchain =  new (class extends Cosmos {
     }
   }
 })({
-  host: 'http://gaia-ibc-hackathon.node.bandchain.org:1317',
+  host: API_HOST + '/gaia-rest',
   chainId: 'band-cosmoshub',
   gasInfo: { minFee: '525000', denom: 'uatom' }, //  🤔
 });
@@ -45,7 +45,7 @@ export const bandBlockchain =  new (class extends Cosmos {
     }
   }
 })({
-  host: 'http://bandchain-ibc-hackathon.node.bandchain.org:1317',
+  host: API_HOST + '/band-rest',
   chainId: 'ibc-bandchain',
   gasInfo: { minFee: '525000', denom: 'uband' }, //  🤔
 });

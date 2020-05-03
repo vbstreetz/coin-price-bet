@@ -11,13 +11,12 @@ var Logger log.Logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 var BUY_GOLD_PACKET_CLIENT_ID_PREFIX string = "ORDER:"
 var COMPLETE_COIN_PRICE_UPDATE_ORACLE_PACKET_CLIENT_ID_PREFIX string = "COIN_PRICE_UPDATE_REQUEST"
 
-var VB_CHAIN_ID string = "vbstreetz"
+var VB_CHAIN_ID string = "band-consumer"
 var GAIA_CHAIN_ID string = "band-cosmoshub"
 var BAND_CHAIN_ID string = "ibc-bandchain"
 
 var TRANSFER_PORT string = "transfer"
-var ORACLE_DATA_REQUEST_PORT string = "coinpricebet"
-var ORACLE_DATA_RECEIVE_PORT string = "oracle"
+var ORACLE_PORT string = "oracle"
 
 var MULTIPLIER int64 = 1000000
 

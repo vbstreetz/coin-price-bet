@@ -21,7 +21,7 @@ func requestCoinPrice(ctx sdk.Context, keeper Keeper, blockId int64, coinId int6
 	askCount := int64(1)
 	minCount := int64(1)
 
-	port := types.ORACLE_DATA_REQUEST_PORT
+	port := types.ORACLE_PORT
 	channelID, err := keeper.GetChannel(ctx, types.BAND_CHAIN_ID, port)
 	if err != nil {
 		return sdkerrors.Wrapf(

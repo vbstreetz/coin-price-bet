@@ -1,7 +1,5 @@
 #!/usr/bin/make -f
 
-o=$(o)
-
 PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
 VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
@@ -50,7 +48,7 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
 
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=vbstreetz \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=band-consumer \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=bcd \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=bccli \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
@@ -96,36 +94,6 @@ endif
 install: go.sum
 	go install $(BUILD_FLAGS) ./cmd/bcd
 	go install $(BUILD_FLAGS) ./cmd/bccli
-
-bcd:
-	@go run -mod=readonly ./cmd/bcd $(o)
-
-bccli:
-	@go run -mod=readonly ./cmd/bccli $(o)
-
-aa:
-	@$(MAKE) bcd o="start --rpc.laddr=tcp://0.0.0.0:26657 --pruning=nothing"
-
-ab:
-	@rly st transfer --debug
-
-ac:
-	@rly st oracle --debug
-
-r:
-	@$(MAKE) bcd o="unsafe-reset-all"
-
-rest:
-	@$(MAKE) bccli o="rest-server --laddr tcp://0.0.0.0:1318"
-
-fmt:
-	@gofmt -w .
-
-ssh:
-	@ssh root@144.202.100.245
-
-superv:
-	@sudo brew services restart supervisor
 
 go-mod-cache: go.sum
 	@echo "--> Download go modules to local cache"
@@ -248,11 +216,11 @@ setup-transactions: start-bc
 	@bash ./lcd_test/testdata/setup.sh
 
 run-lcd-contract-tests:
-	@echo "Running vbstreetz LCD for contract tests"
+	@echo "Running Band-Consumer LCD for contract tests"
 	./build/bccli rest-server --laddr tcp://0.0.0.0:8080 --home /tmp/contract_tests/.bccli --node http://localhost:26657 --chain-id lcd --trust-node true
 
 contract-tests: setup-transactions
-	@echo "Running vbstreetz LCD for contract tests"
+	@echo "Running Band-Consumer LCD for contract tests"
 	dredd && pkill bcd
 
 ###############################################################################
@@ -270,14 +238,36 @@ proto-lint:
 proto-check-breaking:
 	@buf check breaking --against-input '.git#branch=master'
 
-.PHONY: proto-all proto-gen proto-lint proto-check-breaking
+#
 
-.PHONY: all build-linux install install-debug \
+aa:
+	@go run -mod=readonly ./cmd/bcd start --rpc.laddr=tcp://0.0.0.0:26657 --pruning=nothing
+
+ab:
+	@rly st transfer --debug
+
+ac:
+	@rly st oracle --debug
+
+r:
+	@go run -mod=readonly ./cmd/bcd unsafe-reset-all
+
+fmt:
+	@gofmt -w .
+
+ssh:
+	@ssh root@144.202.100.245
+
+superv:
+	@sudo brew services restart supervisor
+
+.PHONY: proto-all proto-gen proto-lint proto-check-breaking \
+	all build-linux install install-debug \
 	go-mod-cache draw-deps clean build \
 	setup-transactions setup-contract-tests-data start-bc run-lcd-contract-tests contract-tests \
 	test test-all test-build test-cover test-unit test-race \
 	aa \
-    	ab \
-      	ac \
-      	fmt \
-      	r
+	ab \
+	ac \
+	fmt \
+	r

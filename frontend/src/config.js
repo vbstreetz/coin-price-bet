@@ -17,5 +17,4 @@ export const DAY_STATES = {
 export const API_HOST =
   window.location.hostname === 'localhost'
     ? 'http://localhost:1317'
-    : 'https://witnet.tools/vb-chain';
-export const CHAIN_ID = 'vbstreetz';
+    : 'https://witnet.tools';

@@ -60,7 +60,7 @@ func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result,
 	askCount := int64(1)
 	minCount := int64(1)
 
-	port := types.ORACLE_DATA_REQUEST_PORT
+	port := types.ORACLE_PORT
 	channelID, err := keeper.GetChannel(ctx, types.BAND_CHAIN_ID, port)
 
 	if err != nil {

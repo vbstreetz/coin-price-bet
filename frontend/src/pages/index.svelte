@@ -4,7 +4,7 @@
   import {derived, get} from 'svelte/store';
   import Day from '../components/day.svelte';
   import {coinPriceBetBlockchain, gaiaBlockchain, bandBlockchain} from '../utils/blockchains';
-  import {address, info, myInfo, balances as allBalances, load, disconnectAccount, connectAccount} from '../stores/blockchains';
+  import {address, info, myInfo, balances as allBalances, load, loadBalance, disconnectAccount, connectAccount} from '../stores/blockchains';
   import {fromMicro, toMicro} from '../utils/cosmos';
   import sl from '../utils/sl';
   import xhr from '../utils/xhr';
@@ -53,6 +53,7 @@
       "chain-id": "band-cosmoshub"
     });
     sl('success', 'Waiting for confirmation...');
+    setTimeout(() => loadBalance(), 2000);
   }
 
   async function rechargeFromGaia() {
@@ -79,6 +80,7 @@
         // "source": true
       });
       sl('success', 'WAITING FOR CONFIRMATION...');
+      setTimeout(() => loadBalance(), 2000);
     } catch (e) {
       sl('error', e);
     }
@@ -93,7 +95,7 @@
       <div class="flex flex-col text-sm">
         <div>Account: {$address}</div>
         <div>Balance: {fromMicro($balances.gaia || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={rechargeFromFaucet}>recharge from faucet</span></div>
-        <div>Balance: {fromMicro($balances.coinPriceBet || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeFromGaia}>recharge from gaia</span></div>
+        <div>Balance: {fromMicro($balances.coinPriceBet || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeFromGaia}>recharge from your gaia account</span></div>
         {#if $myInfo}
         <div>Total Bets: {fromMicro($myInfo.totalBetsAmount)}atom</div>
         <div>Total Wins: {fromMicro($myInfo.totalWinsAmount)}atom</div>

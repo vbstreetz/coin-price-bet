@@ -101,21 +101,21 @@ type BandConsumerApp struct {
 	subspaces map[string]params.Subspace
 
 	// keepers
-	accountKeeper      auth.AccountKeeper
-	bankKeeper         bank.Keeper
-	supplyKeeper       supply.Keeper
-	stakingKeeper      staking.Keeper
-	slashingKeeper     slashing.Keeper
-	mintKeeper         mint.Keeper
-	distrKeeper        distr.Keeper
-	govKeeper          gov.Keeper
-	crisisKeeper       crisis.Keeper
-	paramsKeeper       params.Keeper
-	upgradeKeeper      upgrade.Keeper
-	evidenceKeeper     evidence.Keeper
-	ibcKeeper          ibc.Keeper
-	transferKeeper     transfer.Keeper
-	coinPriceBetKeeper coin_price_bet.Keeper
+	accountKeeper  auth.AccountKeeper
+	bankKeeper     bank.Keeper
+	supplyKeeper   supply.Keeper
+	stakingKeeper  staking.Keeper
+	slashingKeeper slashing.Keeper
+	mintKeeper     mint.Keeper
+	distrKeeper    distr.Keeper
+	govKeeper      gov.Keeper
+	crisisKeeper   crisis.Keeper
+	paramsKeeper   params.Keeper
+	upgradeKeeper  upgrade.Keeper
+	evidenceKeeper evidence.Keeper
+	ibcKeeper      ibc.Keeper
+	transferKeeper transfer.Keeper
+	coin_price_betKeeper  coin_price_bet.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -228,7 +228,7 @@ func NewBandConsumerApp(
 	app.transferKeeper = transfer.NewKeeper(app.cdc, keys[transfer.StoreKey], transferCapKey,
 		app.ibcKeeper.ChannelKeeper, app.bankKeeper, app.supplyKeeper)
 
-	app.coinPriceBetKeeper = coin_price_bet.NewKeeper(
+	app.coin_price_betKeeper = coin_price_bet.NewKeeper(
 		cdc, keys[coin_price_bet.StoreKey], app.bankKeeper, app.ibcKeeper.ChannelKeeper,
 	)
 
@@ -255,14 +255,14 @@ func NewBandConsumerApp(
 		evidence.NewAppModule(app.evidenceKeeper),
 		ibc.NewAppModule(app.ibcKeeper),
 		transfer.NewAppModule(app.transferKeeper),
-		coin_price_bet.NewAppModule(app.coinPriceBetKeeper),
+		coin_price_bet.NewAppModule(app.coin_price_betKeeper),
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 
 	app.mm.SetOrderBeginBlockers(upgrade.ModuleName, mint.ModuleName, distr.ModuleName, slashing.ModuleName, staking.ModuleName)
-	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, coin_price_bet.ModuleName, staking.ModuleName)
+	app.mm.SetOrderEndBlockers(crisis.ModuleName, gov.ModuleName, staking.ModuleName)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
