@@ -14,7 +14,7 @@ export const coinPriceBetBlockchain =  new (class extends Cosmos {
   }
 })({
   host: API_HOST + '/vb-rest',
-  chainId: 'vbstreetz',
+  chainId: 'band-consumer',
   gasInfo: { minFee: '525000', denom: 'stake' }, //  🤔
 });
 

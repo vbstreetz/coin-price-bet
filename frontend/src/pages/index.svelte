@@ -57,10 +57,8 @@
   }
 
   async function rechargeFromGaia() {
-    // const amount = parseInt(prompt('Amount?'));
-    // if (!amount) return sl('error', 'Invalid amount');
-
-    const amount = 1;
+    const amount = parseInt(prompt('Amount?'));
+    if (!amount) return sl('error', 'Invalid amount');
 
     const $address = get(address);
     const $info = get(info);

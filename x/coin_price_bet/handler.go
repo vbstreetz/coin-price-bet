@@ -4,14 +4,13 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/bandprotocol/bandchain/chain/x/oracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	channel "github.com/cosmos/cosmos-sdk/x/ibc/04-channel"
 	channeltypes "github.com/cosmos/cosmos-sdk/x/ibc/04-channel/types"
+	"strconv"
+	"strings"
 	// "github.com/bandprotocol/bandchain/chain/borsh" // nukes dependency tree: todo - pin version
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
@@ -221,18 +220,20 @@ func handlePlaceBet(ctx sdk.Context, msg MsgPlaceBet, keeper Keeper) (*sdk.Resul
 	}
 
 	amount := msg.Amount[0].Amount.Uint64()
-	bettorAddress := msg.Bettor.String()
+	bettor := msg.Bettor.String()
+	coinId := int64(msg.CoinId)
 
-	types.Logger.Info(fmt.Sprintf("Updating mappings due to %s: %d", bettorAddress, amount))
+	types.Logger.Info(fmt.Sprintf("Updating mappings due to bettor(%s) amount(%d) coin(%d)", bettor, amount, coinId))
 
-	betDayId := types.GetDayId(ctx.BlockTime().Unix())
+	betDayId := types.GetDayId(ctx.BlockTime().Unix()) + 1 // for tomorrow
 
 	// Upsert bet day+coin mappings
-	betDayCoin := keeper.GetDayCoinInfo(ctx, betDayId, int64(msg.CoinId))
+	betDayCoin := keeper.GetDayCoinInfo(ctx, betDayId, coinId)
 	betDayCoin.TotalAmount += amount
-	betDayCoin.Bets[bettorAddress] += amount
-	betDayCoin.PaidBettors[bettorAddress] = false
-	keeper.SetDayCoinInfo(ctx, betDayId, int64(msg.CoinId), betDayCoin)
+	keeper.SetDayCoinInfo(ctx, betDayId, coinId, betDayCoin)
+
+	totalAmount := keeper.GetDayCoinBettorAmount(ctx, betDayId, coinId, bettor)
+	keeper.SetDayCoinBettorAmount(ctx, betDayId, coinId, bettor, totalAmount+int64(amount))
 
 	// Upsert bet day mappings
 	betDay := keeper.GetDayInfo(ctx, betDayId)

@@ -31,7 +31,13 @@
   });
 
   async function loadDayInfo() {
-    dayInfo = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}`);
+    const info = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}`);
+    info.grandPrizeAmount = parseInt(info.grandPrizeAmount);
+    info.atomPriceUSD = parseInt(info.atomPriceUSD);
+    info.coinsPerf = info.coinsPerf.map(n => parseInt(n));
+    info.coinsVolume = info.coinsVolume.map(n => parseInt(n));
+    info.state = parseInt(info.state);
+    dayInfo = info;
 
     canBet = dayInfo.state === DAY_STATES.BET;
     isDrawing = dayInfo.state === DAY_STATES.DRAWING;
@@ -41,7 +47,10 @@
   async function loadMyDayInfo() {
     const $address= get(address);
     if ($address) {
-      myDayInfo = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}/${$address}`);
+      const info = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}/${$address}`);
+      info.totalBetAmount = parseInt(info.totalBetAmount);
+      info.coinBetTotalAmount = info.coinBetTotalAmount.map(n => parseInt(n));
+      myDayInfo = info;
     }
   }
 
@@ -52,7 +61,7 @@
 
     try {
       await coinPriceBetBlockchain.tx('post', '/coinpricebet/place-bet', {
-        amount: `${toMicro(atom)} transfer/${$info.betchainTransferChannel}/uatom`,
+        amount: `${toMicro(atom).toString()}transfer/${$info.betchainTransferChannel}/uatom`,
         coinId: COINS.indexOf(coin)
       });
       sl('success', 'WAITING FOR CONFIRMATION...');
@@ -107,7 +116,7 @@
             <div class="grand-prize">
               <div class="atom">{fromMicro(dayInfo.grandPrizeAmount)}<span class="currency">ATOM</span></div>
               <ul class="fiat">
-                <li>~{formatFiat(dayInfo.grandPrizeAmount * dayInfo.atomPriceCents / 100, 'USD')}<span
+                <li>~{formatFiat(fromMicro(dayInfo.grandPrizeAmount) * fromMicro(dayInfo.atomPriceUSD), 'USD')}<span
                   class="currency">USD</span></li>
               </ul>
             </div>
@@ -194,11 +203,11 @@
                   <div class="mt-3">
                     <label for="bet-input">I'm supporting my prediction with this amount of ATOM:</label>
                     <br/>
-                    <input required="required" class="input" type="text" id="bet-input" name="atom"/>
+                    <input required="required" class="input" type="text" id="bet-input" name="atom" placeholder="Enter amout of ATOM..." />
                   </div>
 
                   <div class="flex flex-grow mt-3">
-                    <button type="submit" class="button is-link flex-grow">
+                    <button type="submit" class="button is-link flex-grow" disabled={!$address}>
                       Send prediction
                     </button>
                   </div>

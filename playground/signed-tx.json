@@ -8,7 +8,7 @@
           "buyer": "cosmos15d4apf20449ajvwycq8ruaypt7v6d34522frnd",
           "amount": [
             {
-              "denom": "transfer//uatom",
+              "denom": "transfer/hytgqwvgyk/uatom",
               "amount": "1000000000"
             }
           ]
@@ -22,7 +22,7 @@
     "signatures": [
       {
         "public_key": "61rphyEC2xm7oEQk1j8FoXZfXvs50rP1UOO0FSU1tHwaEuWohvY=",
-        "signature": "SyAsYkfYXXuFGeg9Fas/7YpfzI7YNh8nq9WKufIy11sfeG3uwKzLlgTNSUKCDee0lVVnnYrUX6zBpdm0BVrx6g=="
+        "signature": "bqUdb1CVve1It1NfX5Bhu3zlp7AUKuUQtNco88XSd0oT2I2OVWeUr3sxwUI8oL0O6UUCiqfHYSlaDJSqNgGhVg=="
       }
     ],
     "memo": ""

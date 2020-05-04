@@ -1,1 +1,1 @@
-{"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"coin_price_bet/BuyGold","value":{"buyer":"cosmos13dus5s0c2ey32509xy6hgk8s923wufrv2dyy6g","amount":[{"denom":"transfer/hmagzxrbfy/uatom","amount":"1000000000"}]}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+{"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"coin_price_bet/BuyGold","value":{"buyer":"cosmos15d4apf20449ajvwycq8ruaypt7v6d34522frnd","amount":[{"denom":"transfer/hytgqwvgyk/uatom","amount":"1000000000"}]}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}

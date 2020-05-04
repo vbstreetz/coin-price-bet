@@ -59,9 +59,10 @@ const (
 
 // Structure with coin bets in a contest period (e.g. day)
 type BetDayCoin struct {
-	TotalAmount uint64            // ordered ranking after result has been resolved
-	Bets        map[string]uint64 // address => uint64
-	PaidBettors map[string]bool   // address => bool
+	TotalAmount uint64
+	// no amino support for maps
+	// 	Bets        map[string]uint64 // address => uint64
+	// 	PaidBettors map[string]bool   // address => bool
 }
 
 // Structure with all the current bets information in a contest period (e.g. day)

@@ -52,6 +52,9 @@ var (
 
 	// DayCoinInfoStoreKey is a prefix for storing day+coin infos: dayId+coinId => {bets, ...}
 	DayCoinInfoStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("DayCoinInfo")...)
+
+	// Prefix for day+coin+better => total amount
+	DayCoinBettorAmountStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("DayCoinBettorAmount")...)
 )
 
 func UInt64ToBytes(num uint64) []byte {
@@ -162,10 +165,19 @@ func DayInfoStoreKey(dayId int64) []byte {
 	return append(DayInfoStoreKeyPrefix, Int64ToBytes(dayId)...)
 }
 
-// Generate key for each block time in store
+// Generate key for each day+coin info in store
 func DayCoinInfoStoreKey(dayId int64, coinId int64) []byte {
 	ret := DayCoinInfoStoreKeyPrefix
 	ret = append(ret, Int64ToBytes(dayId)...)
 	ret = append(ret, Int64ToBytes(coinId)...)
+	return ret
+}
+
+// Generate key for each day+coin+bettor => total amount in store
+func DayCoinBettorAmountStoreKey(dayId int64, coinId int64, bettor string) []byte {
+	ret := DayCoinBettorAmountStoreKeyPrefix
+	ret = append(ret, Int64ToBytes(dayId)...)
+	ret = append(ret, Int64ToBytes(coinId)...)
+	ret = append(ret, []byte(bettor)...)
 	return ret
 }

@@ -17,7 +17,7 @@ type Info struct {
 
 type DayInfo struct {
 	GrandPrizeAmount uint64   `json:"grandPrizeAmount"`
-	AtomPriceCents   uint8    `json:"atomPriceCents"`
+	AtomPriceUSD     uint64   `json:"atomPriceUSD"`
 	CoinsPerf        []int64  `json:"coinsPerf"`
 	CoinsVolume      []uint64 `json:"coinsVolume"`
 	State            uint8    `json:"state"`
@@ -59,7 +59,7 @@ func queryInfo(
 
 // queryMyInfo is a query function to get general info of an address
 func queryMyInfo(
-	ctx sdk.Context, keeper Keeper, req abci.RequestQuery, address string,
+	ctx sdk.Context, keeper Keeper, req abci.RequestQuery, bettor string,
 ) ([]byte, error) {
 	ret := &MyInfo{}
 
@@ -138,21 +138,24 @@ func queryDayInfo(
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, fmt.Sprintf("could not compute ATOM coin id"))
 	}
 
-	ret.AtomPriceCents = uint8(keeper.GetLatestCoinPrice(ctx, atomCoinId))
+	ret.AtomPriceUSD = uint64(keeper.GetLatestCoinPrice(ctx, atomCoinId))
 
 	return keeper.cdc.MustMarshalJSON(ret), nil
 }
 
 // queryDayMyInfo is a query function to get general info of an address on a particular day
 func queryMyDayInfo(
-	ctx sdk.Context, keeper Keeper, req abci.RequestQuery, dayId string, address string,
+	ctx sdk.Context, keeper Keeper, req abci.RequestQuery, dayIdString string, bettor string,
 ) ([]byte, error) {
 	ret := &MyDayInfo{
 		CoinBetTotalAmount:     []uint64{},
 		CoinPredictedWinAmount: []uint64{},
 	}
 
-	betDayId := types.GetDayId(ctx.BlockTime().Unix())
+	betDayId, err := strconv.ParseInt(dayIdString, 0, 64)
+	if err != nil {
+		return nil, err
+	}
 
 	coins := types.GetCoins()
 
@@ -160,13 +163,11 @@ func queryMyDayInfo(
 		var amount uint64
 		var win uint64
 
-		betDayCoin := keeper.GetDayCoinInfo(ctx, betDayId, int64(coinId))
-		if betDayCoin != nil {
-			amount = betDayCoin.Bets[address]
-			//       if !betDayCoin.PaidBettors[address] {
-			//         win += betAmount
-			//       }
-		}
+		// 		betDayCoin := keeper.GetDayCoinInfo(ctx, betDayId, int64(coinId))
+		// 		if betDayCoin != nil {
+		// 		}
+
+		amount = uint64(keeper.GetDayCoinBettorAmount(ctx, betDayId, int64(coinId), bettor))
 
 		ret.CoinBetTotalAmount = append(ret.CoinBetTotalAmount, amount)
 		ret.CoinPredictedWinAmount = append(ret.CoinPredictedWinAmount, win)

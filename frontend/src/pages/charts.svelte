@@ -46,6 +46,19 @@
   .heading {
     margin-bottom: 30px;
   }
+
+  .dropdown-icon polyline {
+    stroke: #eee !important;
+  }
+
+  :global(.dark) .dropdown-item:hover {
+    background: inherit;
+    opacity: 0.8;
+  }
+
+  :global(.dark) .dropdown-item {
+    color: white
+  }
 </style>
 
 <div class="flex flex-col">
@@ -59,7 +72,7 @@
         <div
           aria-haspopup="true"
           aria-controls="dropdown-menu"
-          class="flex"
+          class="flex items-center"
         >
           <span>{currentToken}</span>
           <span class="icon is-small dropdown-icon">

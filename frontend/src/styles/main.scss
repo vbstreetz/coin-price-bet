@@ -98,3 +98,7 @@ body {
     border-bottom-color: $link-dark !important;
   }
 }
+
+.dark input::placeholder {
+  color: #999;
+}
