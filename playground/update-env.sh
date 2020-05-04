@@ -1,6 +1,5 @@
 node ./playground/update-relayer-env.js
 
-
 export $(cat ./playground/relayers.env | xargs)
 echo $betchain_transfer_channel
 echo $gaia_transfer_channel

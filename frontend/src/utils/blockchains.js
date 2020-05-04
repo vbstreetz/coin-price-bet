@@ -1,8 +1,8 @@
 import NProgress from 'nprogress';
-import Cosmos from './cosmos';
-import {API_HOST} from '../config';
+import Cosmos, { toMicro } from './cosmos';
+import { API_HOST } from '../config';
 
-export const coinPriceBetBlockchain =  new (class extends Cosmos {
+export const coinPriceBetBlockchain = new (class extends Cosmos {
   async xhr(...args) {
     NProgress.start();
     NProgress.set(0.4);
@@ -15,10 +15,10 @@ export const coinPriceBetBlockchain =  new (class extends Cosmos {
 })({
   host: API_HOST + '/vb-rest',
   chainId: 'band-consumer',
-  gasInfo: { minFee: '525000', denom: 'stake' }, //  🤔
+  // gasInfo: { maxFee: toMicro(1), denom: 'stake' },
 });
 
-export const gaiaBlockchain =  new (class extends Cosmos {
+export const gaiaBlockchain = new (class extends Cosmos {
   async xhr(...args) {
     NProgress.start();
     NProgress.set(0.4);
@@ -31,10 +31,10 @@ export const gaiaBlockchain =  new (class extends Cosmos {
 })({
   host: API_HOST + '/gaia-rest',
   chainId: 'band-cosmoshub',
-  gasInfo: { minFee: '525000', denom: 'uatom' }, //  🤔
+  gasInfo: { maxFee: toMicro(1), denom: 'uatom' },
 });
 
-export const bandBlockchain =  new (class extends Cosmos {
+export const bandBlockchain = new (class extends Cosmos {
   async xhr(...args) {
     NProgress.start();
     NProgress.set(0.4);
@@ -47,5 +47,5 @@ export const bandBlockchain =  new (class extends Cosmos {
 })({
   host: API_HOST + '/band-rest',
   chainId: 'ibc-bandchain',
-  gasInfo: { minFee: '525000', denom: 'uband' }, //  🤔
+  gasInfo: { maxFee: toMicro(1), denom: 'uband' },
 });

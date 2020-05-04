@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-len
 // Most funcs here have been adapted from https://github.com/bluzelle/blzjs/blob/devel/src/swarmClient/cosmos.js
 import shajs from 'sha.js';
 import ripemd160 from 'ripemd160';
@@ -21,6 +22,10 @@ export default class {
   constructor({ host, chainId, gasInfo }) {
     this.host = host;
     this.chainId = chainId;
+    this.gasInfo = gasInfo;
+  }
+
+  setGasInfo(gasInfo) {
     this.gasInfo = gasInfo;
   }
 
@@ -103,15 +108,14 @@ export default class {
   async broadcastSignedTransaction(tx) {
     tx.memo = makeRandomString(32);
 
-    tx.fee = {
-      amount: [{ amount: this.gasInfo.minFee, denom: this.gasInfo.denom }],
-      gas: tx.fee.gas,
-    };
+    // set tx fee info
+    tx.fee = this.getTxFee(tx);
 
     // signature pub key
     const pubKeyValue = Buffer.from(this.getPublicKey(), 'hex').toString(
       'base64'
     );
+    // eslint-disable-next-line max-len
     // const pubKeyValue2 = (new PrivKeySecp256k1(Buffer.from(this.privateKey, 'hex'))).toPubKey().toBytes().toString("base64");
     // console.log(pubKeyValue);
     // console.log(pubKeyValue2);
@@ -174,12 +178,40 @@ export default class {
     throw new Error(raw_log);
   }
 
+  getTxFee({ fee }) {
+    let amount;
+    let denom;
+    let gas = parseInt(fee.gas);
+    if (fee.amount.length) {
+      [{ amount, denom }] = fee.amount;
+      amount = parseInt(amount);
+    } else {
+      denom = this.gasInfo.denom;
+    }
+    const { maxGas, maxFee, gasPrice } = this.gasInfo;
+    // gas
+    if (maxGas && gas > maxGas) {
+      gas = `${maxGas}`;
+    }
+    // amount
+    if (maxFee) {
+      amount = maxFee;
+    } else if (gasPrice) {
+      amount = gas * gasPrice;
+    }
+    return {
+      gas: gas.toString(),
+      amount: [{ denom, amount: amount.toString() }],
+    };
+  }
+
   async xhr(method, endpoint, data) {
     const opts = {};
     if (data) {
       opts.method = method.toUpperCase();
       opts.body = JSON.stringify(data);
-      opts.headers = { // These cause cors issue
+      opts.headers = {
+        // These cause cors issue
         // Accept: 'application/json',
         // 'Content-Type': 'application/json',
       };
@@ -276,4 +308,10 @@ export function toMicro(n) {
 
 export function fromMicro(n) {
   return n / Math.pow(10, 6);
+}
+
+export function generateMnemonic() {
+  const array = new Uint32Array(32);
+  const bytes = window.crypto.getRandomValues(array);
+  return bip39.entropyToMnemonic(Buffer.from(bytes).toString("hex"));
 }

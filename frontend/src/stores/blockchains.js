@@ -1,17 +1,23 @@
-import {writable, get, derived} from 'svelte/store';
-import {coinPriceBetBlockchain, gaiaBlockchain, bandBlockchain} from '../utils/blockchains';
+import { writable, get } from 'svelte/store';
+import {
+  coinPriceBetBlockchain,
+  gaiaBlockchain,
+  bandBlockchain,
+} from '../utils/blockchains';
 
 export const address = writable(null);
 export const info = writable(null);
 export const myInfo = writable(null);
 export const balances = writable({});
 
-export async function load () {
+export async function load() {
   await Promise.all([loadInfo(), loadAccount()]);
 }
 
-export async function connectAccount() {
-  const mnemonic = prompt('Enter mnemonic:');
+export async function connectAccount(mnemonic) {
+  if (!mnemonic) {
+    mnemonic = prompt('Enter mnemonic:');
+  }
   if (!mnemonic) {
     return;
   }
@@ -24,16 +30,16 @@ export function disconnectAccount() {
 }
 
 async function loadInfo() {
-  info.set(await coinPriceBetBlockchain.query(`/coinpricebet/info`));
+  info.set(await coinPriceBetBlockchain.query('/coinpricebet/info'));
 }
 
 async function loadAccount(mnemonic) {
   if (mnemonic) {
-    if (!await coinPriceBetBlockchain.loadPrivateKeyFromMnemonic(mnemonic)) {
+    if (!(await coinPriceBetBlockchain.loadPrivateKeyFromMnemonic(mnemonic))) {
       return;
     }
   } else {
-    if (!await coinPriceBetBlockchain.loadPrivateKeyFromCache()) {
+    if (!(await coinPriceBetBlockchain.loadPrivateKeyFromCache())) {
       return;
     }
   }
@@ -57,13 +63,16 @@ async function loadAccount(mnemonic) {
 
 export async function loadBalance() {
   balances.set({
-    coinPriceBet: await coinPriceBetBlockchain.query(`/bank/balances/${get(address)}`),
+    coinPriceBet: await coinPriceBetBlockchain.query(
+      `/bank/balances/${get(address)}`
+    ),
     gaia: await gaiaBlockchain.query(`/bank/balances/${get(address)}`),
     // band: await bandBlockchain.query(`/bank/balances/${bandBlockchain.address}`),
   });
 }
 
 async function loadMyInfo() {
-  myInfo.set(await coinPriceBetBlockchain.query(`/coinpricebet/info/${get(address)}`));
+  myInfo.set(
+    await coinPriceBetBlockchain.query(`/coinpricebet/info/${get(address)}`)
+  );
 }
-

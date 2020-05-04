@@ -24,4 +24,5 @@ func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) 
 	r.HandleFunc(fmt.Sprintf("/%s/info/{%s}", storeName, restPathVarAddress), getMyInfoHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/day-info/{%s}", storeName, restPathVarDayId), getDayInfoHandler(cliCtx, storeName)).Methods("GET")
 	r.HandleFunc(fmt.Sprintf("/%s/day-info/{%s}/{%s}", storeName, restPathVarDayId, restPathVarAddress), getMyDayInfoHandler(cliCtx, storeName)).Methods("GET")
+	r.HandleFunc(fmt.Sprintf("/%s/faucet/{%s}", storeName, restPathVarAddress), faucetHandler(cliCtx, storeName)).Methods("GET")
 }

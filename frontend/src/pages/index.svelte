@@ -5,7 +5,7 @@
   import Day from '../components/day.svelte';
   import {coinPriceBetBlockchain, gaiaBlockchain, bandBlockchain} from '../utils/blockchains';
   import {address, info, myInfo, balances as allBalances, load, loadBalance, disconnectAccount, connectAccount} from '../stores/blockchains';
-  import {fromMicro, toMicro} from '../utils/cosmos';
+  import {fromMicro, toMicro, generateMnemonic} from '../utils/cosmos';
   import sl from '../utils/sl';
   import xhr from '../utils/xhr';
   import {COINS} from '../config';
@@ -27,7 +27,9 @@
         const coin = coinPriceBet[i];
         if (~coin.denom.search($info.betchainTransferChannel)) {
           b.coinPriceBet = coin.amount;
-          break;
+        }
+        if (coin.denom === 'stake') {
+          b.stake = coin.amount;
         }
       }
     }
@@ -45,13 +47,25 @@
     return b;
   });
 
-  onMount(load);
+  onMount(async function () {
+    await load();
+    coinPriceBetBlockchain.setGasInfo({
+      denom: `transfer/${$info.betchainTransferChannel}/uatom`,
+      maxFee: toMicro(1)
+    });
+  });
 
-  async function rechargeFromFaucet() {
+  async function rechargeAtomFromFaucet() {
     await xhr('post', '/gaia-faucet/', {
       "address": get(address),
       "chain-id": "band-cosmoshub"
     });
+    sl('success', 'Waiting for confirmation...');
+    setTimeout(() => loadBalance(), 2000);
+  }
+
+  async function rechargeStakeFromFaucet() {
+    await xhr('get', `/vb-rest/coinpricebet/faucet/${get(address)}`);
     sl('success', 'Waiting for confirmation...');
     setTimeout(() => loadBalance(), 2000);
   }
@@ -83,6 +97,11 @@
       sl('error', e);
     }
   }
+
+  function generateAccount() {
+    const mnemonic = generateMnemonic();
+    connectAccount(mnemonic);
+  }
 </script>
 
 <div>
@@ -92,8 +111,9 @@
     {#if $address}
       <div class="flex flex-col text-sm">
         <div>Account: {$address}</div>
-        <div>Balance: {fromMicro($balances.gaia || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={rechargeFromFaucet}>recharge from faucet</span></div>
+        <div>Balance: {fromMicro($balances.gaia || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={rechargeAtomFromFaucet}>recharge from faucet</span></div>
         <div>Balance: {fromMicro($balances.coinPriceBet || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeFromGaia}>recharge from your gaia account</span></div>
+        <div>Balance: {fromMicro($balances.stake || 0)}stake (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeStakeFromFaucet}>request from faucet (used for transactions fee)</span></div>
         {#if $myInfo}
         <div>Total Bets: {fromMicro($myInfo.totalBetsAmount)}atom</div>
         <div>Total Wins: {fromMicro($myInfo.totalWinsAmount)}atom</div>
@@ -103,6 +123,9 @@
         DISCONNECT
       </button>
     {:else}
+      <button class="button is-primary is-small mr-3" on:click={generateAccount}>
+        GENERATE
+      </button>
       <button class="button is-primary is-small" on:click={connectAccount}>
         CONNECT
       </button>

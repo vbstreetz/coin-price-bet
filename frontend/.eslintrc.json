@@ -34,8 +34,7 @@
     "require-atomic-updates": "off",
     "quotes": ["warn", "single"],
     "semi": "error",
-    "space-before-blocks": ["warn", "always"],
-    "space-before-function-paren": ["error", "never"]
+    "space-before-blocks": ["warn", "always"]
   },
   "extends": ["eslint:recommended", "plugin:prettier/recommended"],
   "env": {
