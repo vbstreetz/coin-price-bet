@@ -21,7 +21,7 @@ func faucetHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc
 		command := fmt.Sprintf("bccli tx send requester %s %dstake --keyring-backend test -y", address, FAUCET_STAKE_AMOUNT)
 		types.Logger.Info(command)
 
-		cmd := exec.Command(BCCLI_PROGRAM_PATH, "tx", "send", "requester", address, fmt.Sprintf("%dstake", FAUCET_STAKE_AMOUNT), "--keyring-backend", "test", "-y")
+		cmd := exec.Command(BCCLI_PROGRAM_PATH, "tx", "send", "requester", address, fmt.Sprintf("%dstake", FAUCET_STAKE_AMOUNT), "--keyring-backend", "test", "-y", "--home", "/opt/.bccli")
 		_, err := cmd.Output()
 		if err != nil {
 		  types.Logger.Error(fmt.Sprintf("%s", err))
