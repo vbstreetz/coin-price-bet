@@ -29,6 +29,8 @@ module.exports = {
     production &&
       purgeCss({
         content: ['./**/*.html', './**/*.svelte'],
+        whitelistPatterns: [/nprogress/, /sweetalert/],
+        whitelist: ['nprogress', 'sweetalert'],
         defaultExtractor: (content) => content.match(/[A-Za-z0-9-_:/]+/g) || [],
       }),
   ],

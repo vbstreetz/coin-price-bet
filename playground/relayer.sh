@@ -1,3 +1,5 @@
+set -e
+
 # Remove old config
 rm -rf ~/.relayer
 
@@ -33,6 +35,7 @@ rly pth gen  band-consumer transfer band-cosmoshub transfer transfer
 rly pth gen  band-consumer coinpricebet ibc-bandchain oracle oracle
 
 # Create connection and channel from path
+echo "linking paths..."
 echo "" > ./playground/relayer-create.log
 rly tx link transfer >> ./playground/relayer-create.log
 rly tx link oracle >> ./playground/relayer-create.log
@@ -42,3 +45,5 @@ rly tx link oracle >> ./playground/relayer-create.log
 # Seperate run these command in different windows
 #rly st oracle
 #rly st transfer
+
+./playground/relayer-post-setup.sh

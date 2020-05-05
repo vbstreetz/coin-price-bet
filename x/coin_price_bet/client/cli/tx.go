@@ -85,7 +85,7 @@ func GetCmdSetChannel(cdc *codec.Codec) *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Register a verified channel.
 Example:
-$ %s tx coinpricebet set-cahnnel bandchain coin_price_bet dbdfgsdfsd
+$ %s tx coinpricebet set-channel bandchain coin_price_bet dbdfgsdfsd
 `,
 				version.ClientName,
 			),
@@ -151,7 +151,7 @@ $ %s tx coinpricebet place-bet btc 1000000dfsbsdfdf/transfer/uatom
 			}
 
 			if !coinIsSupported {
-				return sdkerrors.Wrapf(types.ErrOnlyOneDenomAllowed, "%d denoms included", len(amount))
+				return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "coin not supported %s", coin)
 			}
 
 			msg := types.NewMsgPlaceBet(

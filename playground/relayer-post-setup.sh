@@ -1,11 +1,10 @@
 echo "typical abstract shoe junior annual idle conduct extend high source cliff zero quality brick fluid spare roast pulp claw swear bicycle lens teach digital" | bccli keys add vb --recover --keyring-backend test
 
+# Get some stake
 bccli tx send requester $(bccli keys show -a vb) 1000000000000stake --keyring-backend test -y
 # bccli tx send requester cosmos1crecwthf7rvddf3vznsrw4wwlq4pspkp0ehgkv 1000000stake --keyring-backend test -y --home /root/.bccli
 
 # ufw allow 26657
-
-export $(cat ./playground/relayers.env | xargs)
 
 # Get some band for the bandchain relayer
 # The relayer pays for the oracle requests

@@ -55,6 +55,12 @@ var (
 
 	// Prefix for day+coin+better => total amount
 	DayCoinBettorAmountStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("DayCoinBettorAmount")...)
+
+	// All bets amount
+	TotalBetsAmountStoreKey = append(GlobalStoreKeyPrefix, []byte("TotalBetsAmount")...)
+
+	// All wins amount
+	TotalWinsAmountStoreKey = append(GlobalStoreKeyPrefix, []byte("TotalWinsAmount")...)
 )
 
 func UInt64ToBytes(num uint64) []byte {

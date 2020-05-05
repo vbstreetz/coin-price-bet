@@ -60,3 +60,35 @@ func (k Keeper) SetDayCoinBettorAmount(ctx sdk.Context, dayId int64, coinId int6
 	store := ctx.KVStore(k.storeKey)
 	store.Set(storeKey, types.Int64ToBytes(amount))
 }
+
+func (k Keeper) GetTotalBetsAmount(ctx sdk.Context) int64 {
+	storeKey := types.TotalBetsAmountStoreKey
+	store := ctx.KVStore(k.storeKey)
+	if b := store.Get(storeKey); b != nil {
+		return types.BytesToInt64(b)
+	} else {
+		return 0
+	}
+}
+
+func (k Keeper) SetTotalBetsAmount(ctx sdk.Context, amount int64) {
+	storeKey := types.TotalBetsAmountStoreKey
+	store := ctx.KVStore(k.storeKey)
+	store.Set(storeKey, types.Int64ToBytes(amount))
+}
+
+func (k Keeper) GetTotalWinsAmount(ctx sdk.Context) int64 {
+	storeKey := types.TotalWinsAmountStoreKey
+	store := ctx.KVStore(k.storeKey)
+	if b := store.Get(storeKey); b != nil {
+		return types.BytesToInt64(b)
+	} else {
+		return 0
+	}
+}
+
+func (k Keeper) SetTotalWinsAmount(ctx sdk.Context, amount int64) {
+	storeKey := types.TotalWinsAmountStoreKey
+	store := ctx.KVStore(k.storeKey)
+	store.Set(storeKey, types.Int64ToBytes(amount))
+}

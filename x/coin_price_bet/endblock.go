@@ -7,7 +7,7 @@ import (
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 )
 
-const PRICE_PING_BLOCK_MOD int64 = 300
+const PRICE_PING_BLOCK_MOD int64 = 1000
 
 func handleEndBlock(ctx sdk.Context, k Keeper, block abci.RequestEndBlock) {
 	coins := GetCoins()

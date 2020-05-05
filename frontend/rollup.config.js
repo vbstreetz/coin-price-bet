@@ -21,6 +21,8 @@ const shouldPrerender =
     ? process.env.PRERENDER
     : !!production;
 
+console.log('production %s', production);
+
 del.sync(distDir + '/**');
 
 const bundledConfig = {

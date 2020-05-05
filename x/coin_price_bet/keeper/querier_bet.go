@@ -63,10 +63,8 @@ func queryMyInfo(
 ) ([]byte, error) {
 	ret := &MyInfo{}
 
-	// 	for _, bet := range allBetsBy {
-	// 		ret.TotalBetsAmount = 0
-	// 		ret.TotalWinsAmount = 0
-	// 	}
+	ret.TotalBetsAmount = uint64(keeper.GetTotalBetsAmount(ctx))
+	ret.TotalWinsAmount = uint64(keeper.GetTotalWinsAmount(ctx))
 
 	return keeper.cdc.MustMarshalJSON(ret), nil
 }

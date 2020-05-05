@@ -252,6 +252,18 @@ ac:
 r:
 	@go run -mod=readonly ./cmd/bcd unsafe-reset-all
 
+l-aa:
+	@tail -f /var/log/aa.log
+
+l-ab:
+	@tail -f /var/log/ab.log
+
+l-ac:
+	@tail -f /var/log/ac.log
+
+l-rest:
+	@tail -f /var/log/rest.log
+
 fmt:
 	@gofmt -w .
 
@@ -270,4 +282,8 @@ superv:
 	ab \
 	ac \
 	fmt \
-	r
+	r \
+	l-aa \
+    l-ab \
+    l-ac \
+    l-rest
