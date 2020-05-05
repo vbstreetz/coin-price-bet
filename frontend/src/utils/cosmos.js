@@ -9,6 +9,7 @@ import bech32 from 'bech32';
 import bitcoinjs from 'bitcoinjs-lib';
 import bip32 from 'bip32';
 import bip39 from 'bip39';
+import { sleep } from '../utils';
 // import {PrivKeySecp256k1} from '@everett-protocol/cosmosjs/crypto';
 
 const BROADCAST_MAX_RETRIES = 10;
@@ -112,9 +113,13 @@ export default class {
     tx.fee = this.getTxFee(tx);
 
     // signature pub key
-    const pubKeyValue = Buffer.from(this.getPublicKey(), 'hex').toString(
-      'base64'
-    );
+    // const pubKeyValue = Buffer.from(this.getPublicKey(), 'hex').toString(
+    //   'base64'
+    // );
+    const newPubKeyValue = Buffer.from(
+      'eb5ae98721' + this.getPublicKey(),
+      'hex'
+    ).toString('base64');
     // eslint-disable-next-line max-len
     // const pubKeyValue2 = (new PrivKeySecp256k1(Buffer.from(this.privateKey, 'hex'))).toPubKey().toBytes().toString("base64");
     // console.log(pubKeyValue);
@@ -136,10 +141,11 @@ export default class {
 
     tx.signatures = [
       {
-        pub_key: {
-          type: 'tendermint/PubKeySecp256k1',
-          value: pubKeyValue,
-        },
+        // pub_key: {
+        //   type: 'tendermint/PubKeySecp256k1',
+        //   value: pubKeyValue,
+        // },
+        public_key: newPubKeyValue,
         signature: sig,
         account_number: this.account.account_number.toString(),
         sequence: this.account.sequence.toString(),
@@ -276,12 +282,6 @@ function makeRandomString(length) {
   return result;
 }
 
-async function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 function cache(k, v) {
   switch (arguments.length) {
     case 2:
@@ -313,5 +313,5 @@ export function fromMicro(n) {
 export function generateMnemonic() {
   const array = new Uint32Array(32);
   const bytes = window.crypto.getRandomValues(array);
-  return bip39.entropyToMnemonic(Buffer.from(bytes).toString("hex"));
+  return bip39.entropyToMnemonic(Buffer.from(bytes).toString('hex'));
 }
