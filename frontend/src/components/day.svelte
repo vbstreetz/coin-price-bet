@@ -24,10 +24,10 @@
   let isPayout;
 
   onMount(async function () {
-    Promise.all([
+    await Promise.all([
       loadDayInfo(),
       loadMyDayInfo()
-    ])
+    ]);
   });
 
   async function loadDayInfo() {
@@ -66,7 +66,10 @@
       });
       sl('success', 'WAITING FOR CONFIRMATION...');
       await sleep(3000);
-      await loadDayInfo();
+      await Promise.all([
+        loadDayInfo(),
+        loadMyDayInfo()
+      ]);
     } catch (e) {
       sl('error', e);
     }

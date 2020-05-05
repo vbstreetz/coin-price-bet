@@ -76,9 +76,9 @@
         {#if $address}
           ---
           <div class="flex flex-col text-sm">
-            <div>{fromMicro($parsedBalances.gaia.atom || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={rechargeAtomFromFaucet}>recharge from faucet</span></div>
-            <div>{fromMicro($parsedBalances.coinPriceBet.atom || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeAtomFromGaia}>recharge from your gaia account</span></div>
-            <div>{fromMicro($parsedBalances.coinPriceBet.stake || 0)}stake (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeStakeFromFaucet}>request from faucet (used for transactions fee)</span></div>
+            <div>{fromMicro($parsedBalances.gaia.atom || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={() => rechargeAtomFromFaucet()}>recharge from faucet</span></div>
+            <div>{fromMicro($parsedBalances.coinPriceBet.atom || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={() => rechargeAtomFromGaia()}>recharge from your gaia account</span></div>
+            <div>{fromMicro($parsedBalances.coinPriceBet.stake || 0)}stake (coinpricebet) <span class="cursor-pointer underline" on:click={() => rechargeStakeFromFaucet()}>request from faucet (used for transactions fee)</span></div>
           </div>
         {/if}
       </div>

@@ -52,7 +52,31 @@
         <div class='mr-3'>Account: {$address}</div>
         <table class='balances'>
           {#if $parsedBalances.coinPriceBet}
-          <tr><td>Balance:</td><td>{fromMicro($parsedBalances.coinPriceBet.atom || 0)}atom</td></tr>
+          <tr>
+            <td>Balances:</td>
+            <td>
+              <table>
+                <tr>
+                  <td></td>
+                  <td>
+                    {fromMicro($parsedBalances.gaia.atom || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={() => rechargeAtomFromFaucet()}>recharge from faucet</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>
+                    {fromMicro($parsedBalances.coinPriceBet.atom || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={() => rechargeAtomFromGaia()}>recharge from your gaia account</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>
+                    {fromMicro($parsedBalances.coinPriceBet.stake || 0)}stake (coinpricebet) <span class="cursor-pointer underline" on:click={() => rechargeStakeFromFaucet()}>request from faucet (used for transactions fee)</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
           {/if}
           {#if $myInfo}
           <tr><td>Total Bets:</td><td>{fromMicro($myInfo.totalBetsAmount)}atom</td></tr>
@@ -112,6 +136,6 @@
   }
 
   .balances {
-    width: 140px;
+
   }
 </style>

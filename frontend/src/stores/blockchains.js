@@ -113,25 +113,32 @@ export const parsedBalances = derived([balances, info], function ([
   return b;
 });
 
-export async function rechargeAtomFromFaucet() {
+export async function rechargeAtomFromFaucet(opts = {}) {
   await xhr('post', '/gaia-faucet/', {
     address: get(address),
     'chain-id': 'band-cosmoshub',
   });
-  sl('success', 'Waiting for confirmation...');
-  setTimeout(() => loadBalance(), 2000);
-}
-
-export async function rechargeStakeFromFaucet() {
-  await xhr('get', `/vb-rest/coinpricebet/faucet/${get(address)}`);
-  sl('success', 'Waiting for confirmation...');
+  if (!opts.noSuccessMessage) {
+    sl('success', 'Waiting for confirmation...');
+  }
   await sleep(3000);
   await loadBalance();
 }
 
-export async function rechargeAtomFromGaia() {
-  const amount = parseInt(prompt('Amount?'));
-  if (!amount) {
+export async function rechargeStakeFromFaucet(opts = {}) {
+  await xhr('get', `/vb-rest/coinpricebet/faucet/${get(address)}`);
+  if (!opts.noSuccessMessage) {
+    sl('success', 'Waiting for confirmation...');
+  }
+  await sleep(3000);
+  await loadBalance();
+}
+
+export async function rechargeAtomFromGaia(opts = {}) {
+  if (!opts.amount) {
+    opts.amount = parseInt(prompt('Amount?'));
+  }
+  if (!opts.amount) {
     return sl('error', 'Invalid amount');
   }
 
@@ -149,14 +156,16 @@ export async function rechargeAtomFromGaia() {
         amount: [
           {
             denom: `transfer/${$info.betchainTransferChannel}/uatom`,
-            amount: toMicro(amount).toString(),
+            amount: toMicro(opts.amount).toString(),
           },
         ],
         receiver: get(address),
         source: true,
       }
     );
-    sl('success', 'WAITING FOR CONFIRMATION...');
+    if (!opts.noSuccessMessage) {
+      sl('success', 'WAITING FOR CONFIRMATION...');
+    }
     await sleep(3000);
     await loadBalance();
   } catch (e) {
@@ -164,8 +173,20 @@ export async function rechargeAtomFromGaia() {
   }
 }
 
-export function generateAccount() {
+export async function generateAccount() {
   const mnemonic = generateMnemonic();
   console.log(mnemonic);
-  loadAccount(mnemonic);
+  await loadAccount(mnemonic);
+  await rechargeAtomFromFaucet({
+    noSuccessMessage: true,
+  });
+  await Promise.all([
+    rechargeAtomFromGaia({
+      amount: 10,
+      noSuccessMessage: true,
+    }),
+    rechargeStakeFromFaucet({
+      noSuccessMessage: true,
+    }),
+  ]);
 }
