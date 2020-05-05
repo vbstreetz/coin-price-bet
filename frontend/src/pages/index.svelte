@@ -1,13 +1,28 @@
 <script>
   import moment from 'moment';
   import {onMount} from 'svelte';
-  import {derived, get} from 'svelte/store';
+  import {get} from 'svelte/store';
   import Day from '../components/day.svelte';
   import {coinPriceBetBlockchain, gaiaBlockchain, bandBlockchain} from '../utils/blockchains';
-  import {address, info, myInfo, balances as allBalances, load, loadBalance, disconnectAccount, connectAccount} from '../stores/blockchains';
+  import {
+    address,
+    info,
+    myInfo,
+    balances,
+    parsedBalances,
+    load,
+    loadBalance,
+    disconnectAccount,
+    connectAccount,
+    generateAccount,
+    rechargeAtomFromFaucet,
+    rechargeAtomFromGaia,
+    rechargeStakeFromFaucet,
+  } from '../stores/blockchains';
   import {fromMicro, toMicro, generateMnemonic} from '../utils/cosmos';
   import sl from '../utils/sl';
   import xhr from '../utils/xhr';
+  import {sleep} from '../utils';
   import {COINS} from '../config';
 
   const tomorrow = moment.utc().add(1, 'days');
@@ -18,107 +33,36 @@
     {label: 'Today', date: today},
     {label: 'Yesterday', date: yesterday}
   ];
-  const balances = derived(allBalances, function({coinPriceBet, gaia}) {
-    const $info = get(info);
-    const b = {}
-
-    if (coinPriceBet) {
-      for (let i = 0; i < coinPriceBet.length; i++) {
-        const coin = coinPriceBet[i];
-        if (~coin.denom.search($info.betchainTransferChannel)) {
-          b.coinPriceBet = coin.amount;
-        }
-        if (coin.denom === 'stake') {
-          b.stake = coin.amount;
-        }
-      }
-    }
-
-    if (gaia) {
-      for (let i = 0; i < gaia.length; i++) {
-        const coin = gaia[i];
-        if (coin.denom === 'uatom') {
-          b.gaia = coin.amount;
-          break;
-        }
-      }
-    }
-
-    return b;
-  });
 
   onMount(async function () {
     await load();
-    coinPriceBetBlockchain.setGasInfo({
-      denom: `transfer/${$info.betchainTransferChannel}/uatom`,
-      maxFee: toMicro(1)
-    });
+    // coinPriceBetBlockchain.setGasInfo({
+    //   denom: `transfer/${$info.betchainTransferChannel}/uatom`,
+    //   maxFee: toMicro(1)
+    // });
   });
-
-  async function rechargeAtomFromFaucet() {
-    await xhr('post', '/gaia-faucet/', {
-      "address": get(address),
-      "chain-id": "band-cosmoshub"
-    });
-    sl('success', 'Waiting for confirmation...');
-    setTimeout(() => loadBalance(), 2000);
-  }
-
-  async function rechargeStakeFromFaucet() {
-    await xhr('get', `/vb-rest/coinpricebet/faucet/${get(address)}`);
-    sl('success', 'Waiting for confirmation...');
-    setTimeout(() => loadBalance(), 2000);
-  }
-
-  async function rechargeFromGaia() {
-    const amount = parseInt(prompt('Amount?'));
-    if (!amount) return sl('error', 'Invalid amount');
-
-    const $address = get(address);
-    const $info = get(info);
-    const channel = $info.gaiaTransferChannel;
-    // const channel = $info.betchainTransferChannel;
-    const port = 'transfer';
-
-    try {
-      await gaiaBlockchain.tx('post', `/ibc/ports/${port}/channels/${channel}/transfer`, {
-        "amount": [
-          {
-            "denom": `transfer/${$info.betchainTransferChannel}/uatom`,
-            "amount": `${toMicro(amount).toString()}`
-          }
-        ],
-        "receiver": get(address),
-        // "source": true
-      });
-      sl('success', 'WAITING FOR CONFIRMATION...');
-      setTimeout(() => loadBalance(), 2000);
-    } catch (e) {
-      sl('error', e);
-    }
-  }
-
-  function generateAccount() {
-    const mnemonic = generateMnemonic();
-    connectAccount(mnemonic);
-  }
 </script>
 
-<div>
+<div class="dark"> <!-- todo: find out why purgecss doesn't look up html.dark -->
   <div class="flex">
     <h1 class="main-heading flex-grow">BET TODAY,<br/>THE BEST CRYPTO OF TOMORROW, AND WIN!</h1>
 
     {#if $address}
       <div class="flex flex-col text-sm">
-        <div>Account: {$address}</div>
-        <div>Balance: {fromMicro($balances.gaia || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={rechargeAtomFromFaucet}>recharge from faucet</span></div>
-        <div>Balance: {fromMicro($balances.coinPriceBet || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeFromGaia}>recharge from your gaia account</span></div>
-        <div>Balance: {fromMicro($balances.stake || 0)}stake (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeStakeFromFaucet}>request from faucet (used for transactions fee)</span></div>
-        {#if $myInfo}
-        <div>Total Bets: {fromMicro($myInfo.totalBetsAmount)}atom</div>
-        <div>Total Wins: {fromMicro($myInfo.totalWinsAmount)}atom</div>
-        {/if}
+        <div class='mr-3'>Account: {$address}</div>
+        <table class='balances'>
+          {#if $parsedBalances.coinPriceBet}
+          <tr><td>Balance:</td><td>{fromMicro($parsedBalances.coinPriceBet.atom || 0)}atom</td></tr>
+          {/if}
+          {#if $myInfo}
+          <tr><td>Total Bets:</td><td>{fromMicro($myInfo.totalBetsAmount)}atom</td></tr>
+          <tr><td>Total Wins:</td><td>{fromMicro($myInfo.totalWinsAmount)}atom</td></tr>
+          {/if}
+        </table>
       </div>
+      <button class="button is-light is-small ml-2" on:click={loadBalance}>
+        REFRESH BALANCE
+      </button>
       <button class="button is-primary is-small ml-2" on:click={disconnectAccount}>
         DISCONNECT
       </button>
@@ -165,5 +109,9 @@
     position: absolute;
     top: 0;
     width: 1px;
+  }
+
+  .balances {
+    width: 140px;
   }
 </style>

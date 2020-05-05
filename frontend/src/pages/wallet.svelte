@@ -2,8 +2,22 @@
   import { onMount } from 'svelte';
   import {get} from 'svelte/store';
   import {coinPriceBetBlockchain} from '../utils/blockchains';
-  import {address, info, balances, load, loadBalance, disconnectAccount, connectAccount, generateAccount} from '../stores/blockchains';
+  import {
+    address,
+    info,
+    balances,
+    parsedBalances,
+    load,
+    loadBalance,
+    disconnectAccount,
+    connectAccount,
+    generateAccount,
+    rechargeAtomFromFaucet,
+    rechargeAtomFromGaia,
+    rechargeStakeFromFaucet,
+  } from '../stores/blockchains';
   import sl from '../utils/sl';
+  import {fromMicro} from '../utils/cosmos';
 
   onMount(load);
 
@@ -26,11 +40,8 @@
 
 <div class="flex flex-grow flex-col">
   <div class="flex mb-5 items-center">
-    <h1 class="main-heading flex-grow">GOLD CDP</h1>
+    <h1 class="main-heading flex-grow">WALLET</h1>
     {#if $address}
-      <button class="button is-light is-small" on:click={onBuyGold}>
-        BUY GOLD
-      </button>
       <button class="button is-light is-small ml-2" on:click={loadBalance}>
         REFRESH BALANCE
       </button>
@@ -53,9 +64,22 @@
       <div>Balances:</div>
       <div class="ml-5">
         {#if $balances.coinPriceBet}
+          ---
           {#each $balances.coinPriceBet as c}
             <div>{c.amount} {c.denom}</div>
           {/each}
+          {#each $balances.gaia as c}
+            <div>{c.amount} {c.denom}</div>
+          {/each}
+        {/if}
+
+        {#if $address}
+          ---
+          <div class="flex flex-col text-sm">
+            <div>{fromMicro($parsedBalances.gaia.atom || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={rechargeAtomFromFaucet}>recharge from faucet</span></div>
+            <div>{fromMicro($parsedBalances.coinPriceBet.atom || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeAtomFromGaia}>recharge from your gaia account</span></div>
+            <div>{fromMicro($parsedBalances.coinPriceBet.stake || 0)}stake (coinpricebet) <span class="cursor-pointer underline" on:click={rechargeStakeFromFaucet}>request from faucet (used for transactions fee)</span></div>
+          </div>
         {/if}
       </div>
     </div>

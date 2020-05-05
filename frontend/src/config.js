@@ -8,5 +8,5 @@ export const DAY_STATES = {
 
 export const API_HOST =
   window.location.hostname === 'localhost'
-    ? 'http://localhost:1317'
+    ? 'http://localhost:4343'
     : 'https://witnet.tools';

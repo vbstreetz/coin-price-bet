@@ -15,7 +15,7 @@ export const coinPriceBetBlockchain = new (class extends Cosmos {
 })({
   host: API_HOST + '/vb-rest',
   chainId: 'band-consumer',
-  // gasInfo: { maxFee: toMicro(1), denom: 'stake' },
+  gasInfo: { maxFee: toMicro(1), denom: 'stake' },
 });
 
 export const gaiaBlockchain = new (class extends Cosmos {

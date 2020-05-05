@@ -19,6 +19,7 @@
 <div class="topbar flex justify-end text-xs">
   <a href="/" class="mr-3">bet</a>
   <a href="/gold" class="mr-3">goldcdp</a>
-  <a href="/charts">prices</a>
+  <a href="/charts" class="mr-3">prices</a>
+  <a href="/wallet">wallet</a>
 </div>
 <Router {routes}/>

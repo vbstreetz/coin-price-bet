@@ -5,7 +5,7 @@
   import Clock from '../components/clock.svelte';
   import {coinPriceBetBlockchain} from '../utils/blockchains';
   import {fromMicro, toMicro} from '../utils/cosmos';
-  import {formatFiat} from '../utils';
+  import {formatFiat, sleep} from '../utils';
   import sl from '../utils/sl';
   import {address, info} from '../stores/blockchains';
   import {COINS, DAY_STATES} from '../config';
@@ -45,7 +45,7 @@
   }
 
   async function loadMyDayInfo() {
-    const $address= get(address);
+    const $address = get(address);
     if ($address) {
       const info = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}/${$address}`);
       info.totalBetAmount = parseInt(info.totalBetAmount);
@@ -65,13 +65,15 @@
         coinId: COINS.indexOf(coin)
       });
       sl('success', 'WAITING FOR CONFIRMATION...');
+      await sleep(3000);
+      await loadDayInfo();
     } catch (e) {
       sl('error', e);
     }
   }
 </script>
 
-<div class="day-container flex">
+<div class="day-container flex dark"> <!-- todo: find out why purgecss doesn't look up html.dark -->
   {#if dayInfo}
     <div class="day-divider flex justify-center">
       <div class="day-divider-dot">
@@ -157,26 +159,30 @@
               <header><h1>My predictions</h1></header>
               <div>
                 <div>
-                  <table class="table">
+                  <table class="table text-sm">
                     <thead>
                     <tr>
                       <th>Symbol</th>
-                      <th>Amount</th>
-                      <th>Potential Win</th>
+                      <th align="right">Amount</th>
+                      <th align="right">Potential Win</th>
                     </tr>
                     </thead>
                     <tbody>
                     {#each COINS as coin, i}
                       <tr>
                         <td class="text-left">
-                          {coin}
-                          {#if !canBet}
-                            <small class="text-xs">{fromMicro(dayInfo.coinsPerf[i] || 0).toFixed(2)}%</small>
-                          {/if}
+                          <div class='flex'>
+                            <div class='flex-grow'>{coin}</div>
+                            {#if !canBet}
+                              <small class="text-xs ml-3">{fromMicro(dayInfo.coinsPerf[i] || 0).toFixed(2)}%</small>
+                            {/if}
+                          </div>
                         </td>
                         {#if myDayInfo}
-                          <td class="text-right">{fromMicro(myDayInfo.coinBetTotalAmount[i] || 0)} ATOM</td>
-                          <td class="text-right">{fromMicro(myDayInfo.coinPredictedWinAmount[i] || 0)} ATOM</td>
+                          <td align="right">{fromMicro(myDayInfo.coinBetTotalAmount[i] || 0)} <small
+                            class="text-xs">ATOM</small></td>
+                          <td align="right">{fromMicro(myDayInfo.coinPredictedWinAmount[i] || 0)} <small
+                            class="text-xs">ATOM</small></td>
                         {/if}
                       </tr>
                     {/each}
@@ -203,7 +209,8 @@
                   <div class="mt-3">
                     <label for="bet-input">I'm supporting my prediction with this amount of ATOM:</label>
                     <br/>
-                    <input required="required" class="input" type="text" id="bet-input" name="atom" placeholder="Enter amout of ATOM..." />
+                    <input required="required" class="input" type="text" id="bet-input" name="atom"
+                           placeholder="Enter amout of ATOM..."/>
                   </div>
 
                   <div class="flex flex-grow mt-3">
@@ -272,7 +279,7 @@
     border-color: hsl(0, 0%, 96%);
   }
 
-  :global(.dark) .day-divider-dot-inner {
+  .dark .day-divider-dot-inner {
     border-color: #333;
   }
 
@@ -281,7 +288,7 @@
     border-color: var(--dot-active-color);
   }
 
-  :global(.dark) .day-divider-dot-inner--active {
+  .dark .day-divider-dot-inner--active {
     border-color: #333;
   }
 
@@ -303,10 +310,10 @@
     padding-left: 0;
   }
 
-  :global(.dark) .day-card {
+  .dark .day-card {
     background: var(--dark-1);
     border: none;
-    box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
   }
 
   .day-card:before {
@@ -319,7 +326,7 @@
     top: 12px;
   }
 
-  :global(.dark) .day-card:before {
+  .dark .day-card:before {
     border-color: var(--border-color);
   }
 
@@ -327,7 +334,7 @@
     border-right: 1px solid #ddd;
   }
 
-  :global(.dark) .day-card .column:not(:last-child) {
+  .dark .day-card .column:not(:last-child) {
     border-color: #333;
   }
 
