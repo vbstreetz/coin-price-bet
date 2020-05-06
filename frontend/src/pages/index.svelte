@@ -1,29 +1,23 @@
 <script>
   import moment from 'moment';
   import {onMount} from 'svelte';
-  import {get} from 'svelte/store';
   import Day from '../components/day.svelte';
-  import {coinPriceBetBlockchain, gaiaBlockchain, bandBlockchain} from '../utils/blockchains';
   import {
     address,
     info,
     myInfo,
-    balances,
-    parsedBalances,
+    balance,
     load,
     loadBalance,
+    tryReloadBalance,
     disconnectAccount,
     connectAccount,
     generateAccount,
-    rechargeAtomFromFaucet,
-    rechargeAtomFromGaia,
-    rechargeStakeFromFaucet,
-  } from '../stores/blockchains';
+    rechargeFromFaucet,
+  } from '../stores/blockchain';
   import {fromMicro, toMicro, generateMnemonic} from '../utils/cosmos';
   import sl from '../utils/sl';
-  import xhr from '../utils/xhr';
   import {sleep} from '../utils';
-  import {COINS} from '../config';
 
   const tomorrow = moment.utc().add(1, 'days');
   const today = moment.utc();
@@ -33,83 +27,74 @@
     {label: 'Today', date: today},
     {label: 'Yesterday', date: yesterday}
   ];
+  let loaded = false;
 
   onMount(async function () {
     await load();
-    // coinPriceBetBlockchain.setGasInfo({
-    //   denom: `transfer/${$info.betchainTransferChannel}/uatom`,
-    //   maxFee: toMicro(1)
-    // });
+    loaded = true;
   });
+
+  async function onRechargeFromFaucet() {
+    await rechargeFromFaucet();
+    sl('success', 'Waiting for confirmation...');
+    await tryReloadBalance();
+  }
 </script>
 
-<div class="dark"> <!-- todo: find out why purgecss doesn't look up html.dark -->
-  <div class="flex">
-    <h1 class="main-heading flex-grow">BET TODAY,<br/>THE BEST CRYPTO OF TOMORROW, AND WIN!</h1>
+{#if loaded}
+  <div class="dark"> <!-- todo: find out why purgecss doesn't look up html.dark -->
+    <div class="flex">
+      <h1 class="main-heading flex-grow">BET TODAY,<br/>THE BEST CRYPTO OF TOMORROW, AND WIN!</h1>
 
-    {#if $address}
-      <div class="flex flex-col text-sm">
-        <div class='mr-3'>Account: {$address}</div>
-        <table class='balances'>
-          {#if $parsedBalances.coinPriceBet}
-          <tr>
-            <td>Balances:</td>
-            <td>
-              <table>
-                <tr>
-                  <td></td>
-                  <td>
-                    {fromMicro($parsedBalances.gaia.atom || 0)}atom (gaia) <span class="cursor-pointer underline" on:click={() => rechargeAtomFromFaucet()}>recharge from faucet</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td>
-                    {fromMicro($parsedBalances.coinPriceBet.atom || 0)}atom (coinpricebet) <span class="cursor-pointer underline" on:click={() => rechargeAtomFromGaia()}>recharge from your gaia account</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td>
-                    {fromMicro($parsedBalances.coinPriceBet.stake || 0)}stake (coinpricebet) <span class="cursor-pointer underline" on:click={() => rechargeStakeFromFaucet()}>request from faucet (used for transactions fee)</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+      {#if $address}
+        <div class="flex flex-col text-sm">
+          <div class='mr-3'>Account: {$address}</div>
+          <table class='balances'>
+            <tr>
+              <td>Balances:</td>
+              <td>
+                {fromMicro($balance || 0)}BET <span class="cursor-pointer underline" on:click={onRechargeFromFaucet}>recharge from faucet</span>
+              </td>
+            </tr>
+            {#if $myInfo}
+              <tr>
+                <td>Total Bets:</td>
+                <td>{fromMicro($myInfo.totalBetsAmount)}BET</td>
+              </tr>
+              <tr>
+                <td>Total Wins:</td>
+                <td>{fromMicro($myInfo.totalWinsAmount)}BET</td>
+              </tr>
+            {/if}
+          </table>
+        </div>
+        <button class="button is-light is-small ml-2" on:click={loadBalance}>
+          REFRESH BALANCE
+        </button>
+        <button class="button is-light is-small ml-2" on:click={disconnectAccount}>
+          DISCONNECT
+        </button>
+      {:else}
+        <button class="button is-light is-small mr-3" on:click={generateAccount}>
+          GENERATE
+        </button>
+        <button class="button is-light is-small" on:click={connectAccount}>
+          CONNECT
+        </button>
+      {/if}
+    </div>
+
+    {#if info}
+      <div class="main-container">
+        {#each days as day}
+          {#if $info}
+            <Day day={day.date} label={day.label}/>
           {/if}
-          {#if $myInfo}
-          <tr><td>Total Bets:</td><td>{fromMicro($myInfo.totalBetsAmount)}atom</td></tr>
-          <tr><td>Total Wins:</td><td>{fromMicro($myInfo.totalWinsAmount)}atom</td></tr>
-          {/if}
-        </table>
+        {/each}
       </div>
-      <button class="button is-light is-small ml-2" on:click={loadBalance}>
-        REFRESH BALANCE
-      </button>
-      <button class="button is-primary is-small ml-2" on:click={disconnectAccount}>
-        DISCONNECT
-      </button>
-    {:else}
-      <button class="button is-primary is-small mr-3" on:click={generateAccount}>
-        GENERATE
-      </button>
-      <button class="button is-primary is-small" on:click={connectAccount}>
-        CONNECT
-      </button>
     {/if}
   </div>
-
-  {#if info}
-    <div class="main-container">
-      {#each days as day}
-        {#if $info}
-        <Day day={day.date} label={day.label} />
-        {/if}
-      {/each}
-    </div>
-  {/if}
-</div>
+{/if}
 
 <style>
   .main-heading {

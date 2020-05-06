@@ -8,14 +8,14 @@ addr=$(bccli keys show -a $m --keyring-backend test)
 
 bccli tx send requester $addr 100000000stake --keyring-backend test -y
 
-curl https://witnet.tools/vb-rest/auth/accounts/$addr
+curl https://witnet.tools/bet-rest/auth/accounts/$addr
 
 chain_id=band-consumer
 account_number=0
 sequence=0
 
 # Create buy_gold raw transaction
-curl -XPOST -s https://witnet.tools/vb-rest/coinpricebet/place-bet --data-binary '{"base_req":{"from":"'$addr'","chain_id":"'$chain_id'"},"amount":"1000000transfer/'$betchain_transfer_channel'/uatom"}' > playground/unsigned-tx.json
+curl -XPOST -s https://witnet.tools/bet-rest/coinpricebet/place-bet --data-binary '{"base_req":{"from":"'$addr'","chain_id":"'$chain_id'"},"amount":"1000000stake"}' > playground/unsigned-tx.json
 
 # Then sign the transaction
 bccli tx sign playground/unsigned-tx.json --from $m --offline --chain-id $chain_id --sequence $sequence --account-number $account_number > playground/signed-tx.json
@@ -33,7 +33,7 @@ POST 'http://gaia-ibc-hackathon.node.bandchain.org:8000' \
 bccli tx transfer transfer \
 transfer $gaia_transfer_channel \
 10000000 $addr \
-5000000000transfer/$betchain_transfer_channel/uatom \
+1000000stake \
 --from $m \
 --node http://gaia-ibc-hackathon.node.bandchain.org:26657 \
 --chain-id band-cosmoshub \
@@ -47,7 +47,7 @@ bccli query bank balances $(bccli keys show -a vb) \
 # place bet
 
 bccli tx \
-coinpricebet place-bet 1000000000transfer/$betchain_transfer_channel/uatom btc  \
+coinpricebet place-bet 1000000stake btc  \
 --from $m \
 -b block \
 -y

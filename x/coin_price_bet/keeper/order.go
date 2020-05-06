@@ -29,8 +29,8 @@ func (k Keeper) GetNextOrderCount(ctx sdk.Context) uint64 {
 	return orderCount + 1
 }
 
-// Escrow amount
-func (k Keeper) EscrowCollateral(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) error {
+// Escrow amounts
+func (k Keeper) EscrowBuyGoldCollateral(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) error {
 	// TODO: Config chain name
 	collateralChain := "band-cosmoshub"
 
@@ -47,6 +47,20 @@ func (k Keeper) EscrowCollateral(ctx sdk.Context, buyer sdk.AccAddress, amount s
 		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom was: %s", amount[0].Denom)
 	}
 
+	// Escrow source tokens. It fails if balance insufficient.
+	escrowAddress := types.GetEscrowAddress()
+	return k.BankKeeper.SendCoins(ctx, buyer, escrowAddress, amount)
+}
+
+func (k Keeper) EscrowBetCollateral(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) error {
+	// TODO: Support only 1 coin
+	if len(amount) != 1 {
+		return sdkerrors.Wrapf(types.ErrOnlyOneDenomAllowed, "%d denoms included", len(amount))
+	}
+	prefix := "stake"
+	if !strings.HasPrefix(amount[0].Denom, prefix) {
+		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom was: %s", amount[0].Denom)
+	}
 	// Escrow source tokens. It fails if balance insufficient.
 	escrowAddress := types.GetEscrowAddress()
 	return k.BankKeeper.SendCoins(ctx, buyer, escrowAddress, amount)
@@ -69,3 +83,4 @@ func (k Keeper) GetOrder(ctx sdk.Context, id uint64) (types.Order, error) {
 	k.cdc.MustUnmarshalBinaryBare(bz, &order)
 	return order, nil
 }
+

@@ -249,6 +249,9 @@ ab:
 ac:
 	@rly st oracle --debug
 
+rest:
+	@go run -mod=readonly ./cmd/bccli rest-server --laddr tcp://0.0.0.0:1317
+
 r:
 	@go run -mod=readonly ./cmd/bcd unsafe-reset-all
 
@@ -282,6 +285,7 @@ superv:
 	ab \
 	ac \
 	fmt \
+	rest \
 	r \
 	l-aa \
     l-ab \

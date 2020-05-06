@@ -10,7 +10,7 @@ import (
 	"os/exec"
 )
 
-const FAUCET_STAKE_AMOUNT = 1000000
+const FAUCET_STAKE_AMOUNT = 10000000 // 10 bet
 const BCCLI_PROGRAM_PATH = "/opt/bccli"
 
 func faucetHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {

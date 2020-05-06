@@ -123,7 +123,7 @@ func GetCmdPlaceBet(cdc *codec.Codec) *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Place a bet on a particular coin.
 Example:
-$ %s tx coinpricebet place-bet btc 1000000dfsbsdfdf/transfer/uatom
+$ %s tx coinpricebet place-bet btc 1000000stake
 `,
 				version.ClientName,
 			),

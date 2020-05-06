@@ -8,7 +8,7 @@ rly config init
 # Add config after these commands can check your config file at `~/.relayer/config/config.yaml`
 rly chains add -f ./playground/gaia.json
 rly chains add -f ./playground/bandchain.json
-rly chains add -f ./playground/goldchain.json
+rly chains add -f ./playground/betchain.json
 
 # Add relayer account (Recover by mnemonic help for developing)
 rly keys restore band-consumer relayer "clutch amazing good produce frequent release super evidence jungle voyage design clip title involve offer brain tobacco brown glide wire soft depend stand practice"

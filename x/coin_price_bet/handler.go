@@ -46,7 +46,7 @@ func handleSetSourceChannel(ctx sdk.Context, msg MsgSetSourceChannel, keeper Kee
 }
 
 func handleBuyGold(ctx sdk.Context, msg MsgBuyGold, keeper Keeper) (*sdk.Result, error) {
-	if err := keeper.EscrowCollateral(ctx, msg.Buyer, msg.Amount); err != nil {
+	if err := keeper.EscrowBuyGoldCollateral(ctx, msg.Buyer, msg.Amount); err != nil {
 		return nil, err
 	}
 
@@ -215,7 +215,7 @@ func handleOracleCompleteCoinPriceUpdate(ctx sdk.Context, packet oracle.OracleRe
 func handlePlaceBet(ctx sdk.Context, msg MsgPlaceBet, keeper Keeper) (*sdk.Result, error) {
 	types.Logger.Info("Placing bet")
 
-	if err := keeper.EscrowCollateral(ctx, msg.Bettor, msg.Amount); err != nil {
+	if err := keeper.EscrowBetCollateral(ctx, msg.Bettor, msg.Amount); err != nil {
 		return nil, err
 	}
 

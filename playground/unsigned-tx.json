@@ -1,1 +1,0 @@
-{"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"coin_price_bet/PlaceBet","value":{"bettor":"cosmos1xret99eqjd26wcd9x8qf6dv5lplf84ak4j0uue","amount":[{"denom":"transfer/zsymrtfidc/uatom","amount":"1000000"}],"coinId":0}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}

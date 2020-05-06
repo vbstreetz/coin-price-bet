@@ -3,11 +3,10 @@
   import {get} from 'svelte/store';
   import moment from 'moment';
   import Clock from '../components/clock.svelte';
-  import {coinPriceBetBlockchain} from '../utils/blockchains';
   import {fromMicro, toMicro} from '../utils/cosmos';
   import {formatFiat, sleep} from '../utils';
   import sl from '../utils/sl';
-  import {address, info} from '../stores/blockchains';
+  import {address, info, blockchain, tryReloadBalance} from '../stores/blockchain';
   import {COINS, DAY_STATES} from '../config';
 
   export let day;
@@ -31,9 +30,9 @@
   });
 
   async function loadDayInfo() {
-    const info = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}`);
+    const info = await blockchain.query(`/coinpricebet/day-info/${daySinceEpoch}`);
     info.grandPrizeAmount = parseInt(info.grandPrizeAmount);
-    info.atomPriceUSD = parseInt(info.atomPriceUSD);
+    info.currencyPriceUSD = Math.pow(10, 6); // parseInt(info.currencyPriceUSD);
     info.coinsPerf = info.coinsPerf.map(n => parseInt(n));
     info.coinsVolume = info.coinsVolume.map(n => parseInt(n));
     info.state = parseInt(info.state);
@@ -47,7 +46,7 @@
   async function loadMyDayInfo() {
     const $address = get(address);
     if ($address) {
-      const info = await coinPriceBetBlockchain.query(`/coinpricebet/day-info/${daySinceEpoch}/${$address}`);
+      const info = await blockchain.query(`/coinpricebet/day-info/${daySinceEpoch}/${$address}`);
       info.totalBetAmount = parseInt(info.totalBetAmount);
       info.coinBetTotalAmount = info.coinBetTotalAmount.map(n => parseInt(n));
       myDayInfo = info;
@@ -57,18 +56,20 @@
   async function onSendPrediction(event) {
     event.preventDefault();
     const coin = event.target.coin.value;
-    const atom = event.target.atom.value;
-
+    const amount = event.target.amount.value;
+    const $info = get(info);
+    
     try {
-      await coinPriceBetBlockchain.tx('post', '/coinpricebet/place-bet', {
-        amount: `${toMicro(atom).toString()}transfer/${$info.betchainTransferChannel}/uatom`,
+      await blockchain.tx('post', '/coinpricebet/place-bet', {
+        amount: `${toMicro(amount).toString()}stake`,
         coinId: COINS.indexOf(coin)
       });
       sl('success', 'WAITING FOR CONFIRMATION...');
       await sleep(3000);
       await Promise.all([
         loadDayInfo(),
-        loadMyDayInfo()
+        loadMyDayInfo(),
+        tryReloadBalance(),
       ]);
     } catch (e) {
       sl('error', e);
@@ -119,9 +120,9 @@
               </h1>
             </header>
             <div class="grand-prize">
-              <div class="atom">{fromMicro(dayInfo.grandPrizeAmount)}<span class="currency">ATOM</span></div>
+              <div class="amount">{fromMicro(dayInfo.grandPrizeAmount)}<span class="currency">BET</span></div>
               <ul class="fiat">
-                <li>~{formatFiat(fromMicro(dayInfo.grandPrizeAmount) * fromMicro(dayInfo.atomPriceUSD), 'USD')}<span
+                <li>~{formatFiat(fromMicro(dayInfo.grandPrizeAmount) * fromMicro(dayInfo.currencyPriceUSD), 'USD')}<span
                   class="currency">USD</span></li>
               </ul>
             </div>
@@ -145,7 +146,7 @@
               {#if canBet || dayInfo.coinsVolume.length}
                 <ul>
                   {#each COINS as c, i}
-                    <li>{c} - {fromMicro(dayInfo.coinsVolume[i] || 0)} ATOM</li>
+                    <li>{c} - {fromMicro(dayInfo.coinsVolume[i] || 0)} BET</li>
                   {/each}
                 </ul>
               {:else}
@@ -183,9 +184,9 @@
                         </td>
                         {#if myDayInfo}
                           <td align="right">{fromMicro(myDayInfo.coinBetTotalAmount[i] || 0)} <small
-                            class="text-xs">ATOM</small></td>
+                            class="text-xs">BET</small></td>
                           <td align="right">{fromMicro(myDayInfo.coinPredictedWinAmount[i] || 0)} <small
-                            class="text-xs">ATOM</small></td>
+                            class="text-xs">BET</small></td>
                         {/if}
                       </tr>
                     {/each}
@@ -210,10 +211,9 @@
                   </div>
 
                   <div class="mt-3">
-                    <label for="bet-input">I'm supporting my prediction with this amount of ATOM:</label>
+                    <label for="bet-input">I'm supporting my prediction with this amount of BET:</label>
                     <br/>
-                    <input required="required" class="input" type="text" id="bet-input" name="atom"
-                           placeholder="Enter amout of ATOM..."/>
+                    <input required="required" class="input" type="text" id="bet-input" name="amount" placeholder="Enter amount of BET..."/>
                   </div>
 
                   <div class="flex flex-grow mt-3">
@@ -226,13 +226,13 @@
             </div>
           {:else if isDrawing}
             {#if myDayInfo}
-              <div class="mt-4">Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} ATOM</div>
-              <div>Your predicted total win amount: {fromMicro(myDayInfo.totalWinAmount)} ATOM</div>
+              <div class="mt-4">Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} BET</div>
+              <div>Your predicted total win amount: {fromMicro(myDayInfo.totalWinAmount)} BET</div>
             {/if}
           {:else }
             {#if myDayInfo}
-              <div class="mt-4">Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} ATOM</div>
-              <div>Your total win amount: {fromMicro(myDayInfo.totalWinAmount)} ATOM</div>
+              <div class="mt-4">Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} BET</div>
+              <div>Your total win amount: {fromMicro(myDayInfo.totalWinAmount)} BET</div>
             {/if}
           {/if}
         </div>
@@ -393,7 +393,7 @@
     font-size: 1.1rem;
   }
 
-  .grand-prize .atom {
+  .grand-prize .amount {
     border: 2px solid hsl(204, 71%, 53%);
     border-radius: 4px;
     font-size: 3em;
