@@ -273,6 +273,10 @@ fmt:
 ssh:
 	@ssh root@144.202.100.245
 
+nginx:
+	@nginx -s reload
+#	@sudo brew services restart nginx
+
 superv:
 	@sudo brew services restart supervisor
 
@@ -290,4 +294,6 @@ superv:
 	l-aa \
     l-ab \
     l-ac \
-    l-rest
+    l-rest \
+    nginx \
+    superv

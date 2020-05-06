@@ -1,26 +1,26 @@
 package keeper
 
 import (
-	"fmt"
+	// "fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	// sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"
 	"strconv"
 )
 
 type Info struct {
-	FirstDay                uint64 `json:"firstDay"`
-	BetchainTransferChannel string `json:"betchainTransferChannel"`
-	GaiaTransferChannel     string `json:"gaiaTransferChannel"`
+	FirstDay uint64 `json:"firstDay"`
+	// BetchainTransferChannel string `json:"betchainTransferChannel"`
+	// GaiaTransferChannel     string `json:"gaiaTransferChannel"`
 }
 
 type DayInfo struct {
-	GrandPrizeAmount uint64   `json:"grandPrizeAmount"`
-	AtomPriceUSD     uint64   `json:"atomPriceUSD"`
-	CoinsPerf        []int64  `json:"coinsPerf"`
-	CoinsVolume      []uint64 `json:"coinsVolume"`
-	State            uint8    `json:"state"`
+	GrandPrizeAmount uint64 `json:"grandPrizeAmount"`
+	// AtomPriceUSD     uint64   `json:"atomPriceUSD"`
+	CoinsPerf   []int64  `json:"coinsPerf"`
+	CoinsVolume []uint64 `json:"coinsVolume"`
+	State       uint8    `json:"state"`
 }
 
 type MyInfo struct {
@@ -39,20 +39,20 @@ type MyDayInfo struct {
 func queryInfo(
 	ctx sdk.Context, keeper Keeper, req abci.RequestQuery,
 ) ([]byte, error) {
-	betchainTransferChannel, err := keeper.GetChannel(ctx, types.GAIA_CHAIN_ID, types.TRANSFER_PORT)
-	if err != nil {
-		return nil, err
-	}
-
-	gaiaTransferChannel, err := keeper.GetChannel(ctx, types.VB_CHAIN_ID, types.TRANSFER_PORT)
-	if err != nil {
-		return nil, err
-	}
+	// 	betchainTransferChannel, err := keeper.GetChannel(ctx, types.GAIA_CHAIN_ID, types.TRANSFER_PORT)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	//
+	// 	gaiaTransferChannel, err := keeper.GetChannel(ctx, types.VB_CHAIN_ID, types.TRANSFER_PORT)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
 
 	ret := &Info{
-		FirstDay:                uint64(types.GetGenesisBlockTime()),
-		BetchainTransferChannel: betchainTransferChannel,
-		GaiaTransferChannel:     gaiaTransferChannel,
+		FirstDay: uint64(types.GetGenesisBlockTime()),
+		// 		BetchainTransferChannel: betchainTransferChannel,
+		// 		GaiaTransferChannel:     gaiaTransferChannel,
 	}
 	return keeper.cdc.MustMarshalJSON(ret), nil
 }
@@ -121,22 +121,22 @@ func queryDayInfo(
 		}
 	}
 
-	coins := types.GetCoins()
+	// 	coins := types.GetCoins()
+	//
+	// 	found := false
+	// 	var atomCoinId int64
+	// 	for i, c := range coins {
+	// 		if c == "ATOM" {
+	// 			atomCoinId = int64(i)
+	// 			found = true
+	// 			break
+	// 		}
+	// 	}
+	// 	if !found {
+	// 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, fmt.Sprintf("could not compute ATOM coin id"))
+	// 	}
 
-	found := false
-	var atomCoinId int64
-	for i, c := range coins {
-		if c == "ATOM" {
-			atomCoinId = int64(i)
-			found = true
-			break
-		}
-	}
-	if !found {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, fmt.Sprintf("could not compute ATOM coin id"))
-	}
-
-	ret.AtomPriceUSD = uint64(keeper.GetLatestCoinPrice(ctx, atomCoinId))
+	// ret.AtomPriceUSD = uint64(keeper.GetLatestCoinPrice(ctx, atomCoinId))
 
 	return keeper.cdc.MustMarshalJSON(ret), nil
 }

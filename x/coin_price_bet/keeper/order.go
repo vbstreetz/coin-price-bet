@@ -83,4 +83,3 @@ func (k Keeper) GetOrder(ctx sdk.Context, id uint64) (types.Order, error) {
 	k.cdc.MustUnmarshalBinaryBare(bz, &order)
 	return order, nil
 }
-

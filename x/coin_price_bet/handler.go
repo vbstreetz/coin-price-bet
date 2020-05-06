@@ -242,7 +242,7 @@ func handlePlaceBet(ctx sdk.Context, msg MsgPlaceBet, keeper Keeper) (*sdk.Resul
 
 	// Upsert totals
 	totalBetsAmount := keeper.GetTotalBetsAmount(ctx)
-	keeper.SetTotalBetsAmount(ctx, totalBetsAmount + int64(amount))
+	keeper.SetTotalBetsAmount(ctx, totalBetsAmount+int64(amount))
 
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }
