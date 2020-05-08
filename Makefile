@@ -280,6 +280,9 @@ nginx:
 superv:
 	@sudo brew services restart supervisor
 
+superc:
+	@sudo supervisorctl -c ~/homebrew/etc/supervisord.ini
+
 .PHONY: proto-all proto-gen proto-lint proto-check-breaking \
 	all build-linux install install-debug \
 	go-mod-cache draw-deps clean build \
@@ -292,8 +295,9 @@ superv:
 	rest \
 	r \
 	l-aa \
-    l-ab \
-    l-ac \
-    l-rest \
-    nginx \
-    superv
+  l-ab \
+  l-ac \
+  l-rest \
+  nginx \
+  superv \
+	superc

@@ -2,6 +2,7 @@ package coin_price_bet
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/vbstreetz/coin-price-bet/x/coin_price_bet/types"

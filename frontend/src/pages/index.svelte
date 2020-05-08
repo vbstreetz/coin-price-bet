@@ -56,6 +56,7 @@
                 {fromMicro($balance || 0)}BET <span class="cursor-pointer underline" on:click={onRechargeFromFaucet}>recharge from faucet</span>
               </td>
             </tr>
+            <!--
             {#if $myInfo}
               <tr>
                 <td>Total Bets:</td>
@@ -66,6 +67,7 @@
                 <td>{fromMicro($myInfo.totalWinsAmount)}BET</td>
               </tr>
             {/if}
+            -->
           </table>
         </div>
         <button class="button is-light is-small ml-2" on:click={loadBalance}>
@@ -76,10 +78,10 @@
         </button>
       {:else}
         <button class="button is-light is-small mr-3" on:click={generateAccount}>
-          GENERATE
+          GENERATE ACCOUNT
         </button>
         <button class="button is-light is-small" on:click={connectAccount}>
-          CONNECT
+          CONNECT ACCOUNT
         </button>
       {/if}
     </div>

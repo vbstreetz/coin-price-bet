@@ -58,19 +58,21 @@
     const coin = event.target.coin.value;
     const amount = event.target.amount.value;
     const $info = get(info);
-    
+
     try {
-      await blockchain.tx('post', '/coinpricebet/place-bet', {
-        amount: `${toMicro(amount).toString()}stake`,
-        coinId: COINS.indexOf(coin)
+      sl('info', `Supporting ${coin} win prediction with ${amount}BET`, 'Place bet?', async () => {
+        await blockchain.tx('post', '/coinpricebet/place-bet', {
+          amount: `${toMicro(amount).toString()}stake`,
+          coinId: COINS.indexOf(coin)
+        });
+        sl('success', 'WAITING FOR CONFIRMATION...');
+        await sleep(3000);
+        await Promise.all([
+          loadDayInfo(),
+          loadMyDayInfo(),
+          tryReloadBalance(),
+        ]);
       });
-      sl('success', 'WAITING FOR CONFIRMATION...');
-      await sleep(3000);
-      await Promise.all([
-        loadDayInfo(),
-        loadMyDayInfo(),
-        tryReloadBalance(),
-      ]);
     } catch (e) {
       sl('error', e);
     }
@@ -178,7 +180,7 @@
                           <div class='flex'>
                             <div class='flex-grow'>{coin}</div>
                             {#if !canBet}
-                              <small class="text-xs ml-3">{fromMicro(dayInfo.coinsPerf[i] || 0).toFixed(2)}%</small>
+                              <small class="text-xs ml-3">{(fromMicro(dayInfo.coinsPerf[i] || 0) * 100).toFixed(2)}%</small>
                             {/if}
                           </div>
                         </td>

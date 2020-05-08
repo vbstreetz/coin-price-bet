@@ -24,4 +24,5 @@ type (
 	MsgBuyGold          = types.MsgBuyGold
 	MsgSetSourceChannel = types.MsgSetSourceChannel
 	MsgPlaceBet         = types.MsgPlaceBet
+	MsgPayout           = types.MsgPayout
 )

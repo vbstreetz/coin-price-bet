@@ -80,20 +80,7 @@ func queryDayInfo(
 		return nil, err
 	}
 
-	// todo properly compute state
-	todayId := types.GetDayId(ctx.BlockTime().Unix())
-	diff := betDayId - todayId
-	switch true {
-	case diff == 1:
-		ret.State = uint8(types.BET)
-	case diff == 0:
-		ret.State = uint8(types.DRAWING)
-	case diff > -1:
-		ret.State = uint8(types.PAYOUT)
-	default:
-		ret.State = uint8(types.INVALID)
-	}
-	//types.Logger.Info(fmt.Sprintf("%d %d %d %d", betDayId, todayId, diff, ret.State))
+	ret.State = keeper.GetDayState(ctx, betDayId)
 
 	betDay := keeper.GetDayInfo(ctx, betDayId)
 
@@ -156,21 +143,19 @@ func queryMyDayInfo(
 	}
 
 	coins := types.GetCoins()
+	winningCoinId := keeper.GetWinningDayCoinId(ctx, betDayId)
 
 	for coinId := range coins {
-		var amount uint64
 		var win uint64
-
-		// 		betDayCoin := keeper.GetDayCoinInfo(ctx, betDayId, int64(coinId))
-		// 		if betDayCoin != nil {
-		// 		}
-
-		amount = uint64(keeper.GetDayCoinBettorAmount(ctx, betDayId, int64(coinId), bettor))
+		amount := uint64(keeper.GetDayCoinBettorAmount(ctx, betDayId, int64(coinId), bettor))
+		if winningCoinId == uint8(coinId) {
+			win = amount
+		}
 
 		ret.CoinBetTotalAmount = append(ret.CoinBetTotalAmount, amount)
 		ret.CoinPredictedWinAmount = append(ret.CoinPredictedWinAmount, win)
 		ret.TotalBetAmount += amount
-		ret.TotalWinAmount += win // todo
+		ret.TotalWinAmount += win
 	}
 
 	return keeper.cdc.MustMarshalJSON(ret), nil

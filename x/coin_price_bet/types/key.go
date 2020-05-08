@@ -53,8 +53,11 @@ var (
 	// DayCoinInfoStoreKey is a prefix for storing day+coin infos: dayId+coinId => {bets, ...}
 	DayCoinInfoStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("DayCoinInfo")...)
 
-	// Prefix for day+coin+better => total amount
+	// Prefix for day+coin+bettor => total amount
 	DayCoinBettorAmountStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("DayCoinBettorAmount")...)
+
+	// Prefix for day+coin+bettor => paid
+	DayCoinBettorPaidStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("DayCoinBettorPaid")...)
 
 	// All bets amount
 	TotalBetsAmountStoreKey = append(GlobalStoreKeyPrefix, []byte("TotalBetsAmount")...)
@@ -102,6 +105,10 @@ func GetCoins() []string {
 
 func GetGenesisBlockTime() int64 {
 	return 1585699200 // Wednesday, 1 April 2020 00:00:00 GMT
+}
+
+func GetFirstDayId() int64 {
+	return GetDayId(GetGenesisBlockTime())
 }
 
 func GetEscrowAddress() sdk.AccAddress {
@@ -182,6 +189,15 @@ func DayCoinInfoStoreKey(dayId int64, coinId int64) []byte {
 // Generate key for each day+coin+bettor => total amount in store
 func DayCoinBettorAmountStoreKey(dayId int64, coinId int64, bettor string) []byte {
 	ret := DayCoinBettorAmountStoreKeyPrefix
+	ret = append(ret, Int64ToBytes(dayId)...)
+	ret = append(ret, Int64ToBytes(coinId)...)
+	ret = append(ret, []byte(bettor)...)
+	return ret
+}
+
+// Generate key for each day+coin+bettor => paid in store
+func DayCoinBettorPaidStoreKey(dayId int64, coinId int64, bettor string) []byte {
+	ret := DayCoinBettorPaidStoreKeyPrefix
 	ret = append(ret, Int64ToBytes(dayId)...)
 	ret = append(ret, Int64ToBytes(coinId)...)
 	ret = append(ret, []byte(bettor)...)

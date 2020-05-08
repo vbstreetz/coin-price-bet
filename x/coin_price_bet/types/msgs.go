@@ -146,3 +146,48 @@ func (msg MsgPlaceBet) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
+
+// MsgPayout is a message for placing a bet
+type MsgPayout struct {
+	Bettor sdk.AccAddress `json:"bettor"`
+	DayId  int64          `json:"dayId"`
+}
+
+// NewMsgPayout creates a new MsgPayout instance.
+func NewMsgPayout(
+	bettor sdk.AccAddress,
+	dayId int64,
+) MsgPayout {
+	return MsgPayout{
+		Bettor: bettor,
+		DayId:  dayId,
+	}
+}
+
+// Route implements the sdk.Msg interface for MsgPayout.
+func (msg MsgPayout) Route() string { return RouterKey }
+
+// Type implements the sdk.Msg interface for MsgPayout.
+func (msg MsgPayout) Type() string { return "place_bet" }
+
+// ValidateBasic implements the sdk.Msg interface for MsgPayout.
+func (msg MsgPayout) ValidateBasic() error {
+	if msg.Bettor.Empty() {
+		return sdkerrors.Wrapf(ErrInvalidBasicMsg, "MsgPayout: Bettor address must not be empty.")
+	}
+	// if msg.DayId != 0 {
+	// 	return sdkerrors.Wrapf(ErrInvalidBasicMsg, "MsgPayout: Unknown DayId.")
+	// }
+	return nil
+}
+
+// GetSigners implements the sdk.Msg interface for MsgPayout.
+func (msg MsgPayout) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Bettor}
+}
+
+// GetSignBytes implements the sdk.Msg interface for MsgPayout.
+func (msg MsgPayout) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}

@@ -27,6 +27,8 @@ func NewHandler(keeper Keeper) sdk.Handler {
 			return handleSetSourceChannel(ctx, msg, keeper)
 		case MsgPlaceBet:
 			return handlePlaceBet(ctx, msg, keeper)
+		case MsgPayout:
+			return handlePayout(ctx, msg, keeper)
 		// todo: validate msg is from bandchain
 		case channeltypes.MsgPacket:
 			var responsePacket oracle.OracleResponsePacketData
@@ -243,6 +245,39 @@ func handlePlaceBet(ctx sdk.Context, msg MsgPlaceBet, keeper Keeper) (*sdk.Resul
 	// Upsert totals
 	totalBetsAmount := keeper.GetTotalBetsAmount(ctx)
 	keeper.SetTotalBetsAmount(ctx, totalBetsAmount+int64(amount))
+
+	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
+}
+
+func handlePayout(ctx sdk.Context, msg MsgPayout, keeper Keeper) (*sdk.Result, error) {
+	types.Logger.Info("Payout request")
+
+	state := keeper.GetDayState(ctx, msg.DayId)
+	bettor := msg.Bettor.String()
+
+	// Ensure day state is PAYOUT
+	if state != uint8(types.PAYOUT) {
+		return nil, sdkerrors.Wrapf(types.Error, "invalid day(%d) state(%d) coinId(%s)", msg.DayId, state)
+	}
+
+	// Get coin ranking
+	winningCoinId := int64(keeper.GetWinningDayCoinId(ctx, msg.DayId))
+
+	// Ensure user is a winner
+	if keeper.GetDayCoinBettorPaid(ctx, msg.DayId, winningCoinId, bettor) {
+		return nil, sdkerrors.Wrapf(types.Error, "bettor(%s) already paid", bettor)
+	}
+	amount := keeper.GetDayCoinBettorAmount(ctx, msg.DayId, winningCoinId, bettor)
+	if amount == 0 {
+		return nil, sdkerrors.Wrapf(types.Error, "bettor(%s) has no bets in the winning day(%d), coin(%d)", bettor, msg.DayId, winningCoinId)
+	}
+
+	// Transfer prize
+	day := keeper.GetDayInfo(ctx, msg.DayId)
+	dayCoin := keeper.GetDayCoinInfo(ctx, msg.DayId, winningCoinId)
+	prize := amount * int64(day.GrandPrize) / int64(dayCoin.TotalAmount)
+	keeper.SetDayCoinBettorPaid(ctx, msg.DayId, winningCoinId, bettor, true)
+	keeper.Payout(ctx, msg.Bettor, sdk.NewCoins(sdk.NewInt64Coin("stake", prize)))
 
 	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }

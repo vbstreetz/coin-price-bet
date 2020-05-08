@@ -29,6 +29,24 @@ func (k Keeper) GetNextOrderCount(ctx sdk.Context) uint64 {
 	return orderCount + 1
 }
 
+// SetOrder saves the given order to the store without performing any validation.
+func (k Keeper) SetOrder(ctx sdk.Context, id uint64, order types.Order) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.OrderStoreKey(id), k.cdc.MustMarshalBinaryBare(order))
+}
+
+// GetOrder gets the given order from the store
+func (k Keeper) GetOrder(ctx sdk.Context, id uint64) (types.Order, error) {
+	store := ctx.KVStore(k.storeKey)
+	if !store.Has(types.OrderStoreKey(id)) {
+		return types.Order{}, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "order %d not found", id)
+	}
+	bz := store.Get(types.OrderStoreKey(id))
+	var order types.Order
+	k.cdc.MustUnmarshalBinaryBare(bz, &order)
+	return order, nil
+}
+
 // Escrow amounts
 func (k Keeper) EscrowBuyGoldCollateral(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) error {
 	// TODO: Config chain name
@@ -50,36 +68,4 @@ func (k Keeper) EscrowBuyGoldCollateral(ctx sdk.Context, buyer sdk.AccAddress, a
 	// Escrow source tokens. It fails if balance insufficient.
 	escrowAddress := types.GetEscrowAddress()
 	return k.BankKeeper.SendCoins(ctx, buyer, escrowAddress, amount)
-}
-
-func (k Keeper) EscrowBetCollateral(ctx sdk.Context, buyer sdk.AccAddress, amount sdk.Coins) error {
-	// TODO: Support only 1 coin
-	if len(amount) != 1 {
-		return sdkerrors.Wrapf(types.ErrOnlyOneDenomAllowed, "%d denoms included", len(amount))
-	}
-	prefix := "stake"
-	if !strings.HasPrefix(amount[0].Denom, prefix) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom was: %s", amount[0].Denom)
-	}
-	// Escrow source tokens. It fails if balance insufficient.
-	escrowAddress := types.GetEscrowAddress()
-	return k.BankKeeper.SendCoins(ctx, buyer, escrowAddress, amount)
-}
-
-// SetOrder saves the given order to the store without performing any validation.
-func (k Keeper) SetOrder(ctx sdk.Context, id uint64, order types.Order) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.OrderStoreKey(id), k.cdc.MustMarshalBinaryBare(order))
-}
-
-// GetOrder gets the given order from the store
-func (k Keeper) GetOrder(ctx sdk.Context, id uint64) (types.Order, error) {
-	store := ctx.KVStore(k.storeKey)
-	if !store.Has(types.OrderStoreKey(id)) {
-		return types.Order{}, sdkerrors.Wrapf(sdkerrors.ErrKeyNotFound, "order %d not found", id)
-	}
-	bz := store.Get(types.OrderStoreKey(id))
-	var order types.Order
-	k.cdc.MustUnmarshalBinaryBare(bz, &order)
-	return order, nil
 }

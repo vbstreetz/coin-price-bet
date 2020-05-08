@@ -62,7 +62,7 @@
 
 <div class="flex flex-col">
   <div class="heading">
-    <h3>Price Performance</h3>
+    <h3>Today's Price Performance</h3>
   </div>
 
   <div>
