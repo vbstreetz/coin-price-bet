@@ -22,7 +22,7 @@ func GetQueryCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 	}
 	coinPriceBetCmd.AddCommand(flags.GetCommands(
 		GetCmdReadOrder(storeKey, cdc),
-		GetCmdLatestCoinPrices(storeKey, cdc),
+		GetCmdTodayCoinPrices(storeKey, cdc),
 	)...)
 
 	return coinPriceBetCmd
@@ -55,21 +55,21 @@ func GetCmdReadOrder(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdLatestCoinPrices logs latest prices graph of the given coins
-func GetCmdLatestCoinPrices(queryRoute string, cdc *codec.Codec) *cobra.Command {
+// Logs today's prices graph of a given coin
+func GetCmdTodayCoinPrices(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:  keeper.QueryLatestCoinPrices,
+		Use:  keeper.QueryTodayCoinPrices,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			coinID := args[0]
+			coinId := args[0]
 
 			res, _, err := cliCtx.QueryWithData(
-				fmt.Sprintf("custom/%s/%s/%s", queryRoute, keeper.QueryLatestCoinPrices, coinID),
+				fmt.Sprintf("custom/%s/%s/%s", queryRoute, keeper.QueryTodayCoinPrices, coinId),
 				nil,
 			)
 			if err != nil {
-				fmt.Printf("read request fail - %s %s\n", coinID, err)
+				fmt.Printf("read request fail - %s %s\n", coinId, err)
 				return nil
 			}
 

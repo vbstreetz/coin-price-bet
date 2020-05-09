@@ -48,16 +48,6 @@ func (k Keeper) AppendTodayCoinPrice(ctx sdk.Context, coinId int64, price int64)
 	k.SetDayCoinPrices(ctx, dayId, coinId, dayCoinPrices)
 }
 
-// Get prices for the last 3 days
-func (k Keeper) GetLatestCoinPrices(ctx sdk.Context, coinId int64) []int64 {
-	todayId := types.GetDayId(ctx.BlockTime().Unix())
-	prices := []int64{}
-	for i := 0; i < 3; i++ {
-		prices = append(prices, k.GetDayCoinPrices(ctx, todayId-int64(i), coinId)...)
-	}
-	return prices
-}
-
 // // SetBlock saves the given block to the store without performing any validation.
 // func (k Keeper) SetBlockCoinPrice(ctx sdk.Context, blockId int64, coinId int64, price int64) {
 // 	types.Logger.Info(fmt.Sprintf("Got price update for coin(%d) price(%d) block(%d)", coinId, price, blockId))

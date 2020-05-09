@@ -33,7 +33,7 @@
   }
 
   async function fetchData(coin = 0) {
-    const prices = await blockchain.query(`/coinpricebet/latest-coin-prices/${coin}`);
+    const prices = await blockchain.query(`/coinpricebet/today-coin-prices/${coin}`);
     data.set({
       times: new Array(prices.length).fill(0),
       prices: prices.map((s) => parseInt(s) / 1000000),

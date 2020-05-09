@@ -26,13 +26,13 @@ func readOrderHandler(cliCtx context.CLIContext, storeName string) http.HandlerF
 	}
 }
 
-func getLatestCoinPricesHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getTodayCoinPricesHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		coinID := vars[restPathVarCoinId]
+		coinId := vars[restPathVarCoinId]
 
 		res, _, err := cliCtx.QueryWithData(
-			fmt.Sprintf("custom/%s/latest-coin-prices/%s", storeName, coinID),
+			fmt.Sprintf("custom/%s/today-coin-prices/%s", storeName, coinId),
 			nil,
 		)
 		if err != nil {

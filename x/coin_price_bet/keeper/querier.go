@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	QueryOrder            = "order"
-	QueryLatestCoinPrices = "latest-coin-prices"
-	QueryInfo             = "info"
-	QueryDayInfo          = "day-info"
+	QueryOrder           = "order"
+	QueryTodayCoinPrices = "today-coin-prices"
+	QueryInfo            = "info"
+	QueryDayInfo         = "day-info"
 )
 
 // NewQuerier is the module level router for state queries.
@@ -24,9 +24,9 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 			if len(path) == 1 {
 				return queryOrder(ctx, keeper, req, path[1])
 			}
-		case QueryLatestCoinPrices:
+		case QueryTodayCoinPrices:
 			if len(path[1:]) == 1 {
-				return queryLatestCoinPrices(ctx, keeper, req, path[1])
+				return queryTodayCoinPrices(ctx, keeper, req, path[1])
 			}
 		case QueryInfo:
 			switch len(path[1:]) {
