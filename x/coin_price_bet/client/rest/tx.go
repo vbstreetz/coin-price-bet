@@ -105,7 +105,7 @@ func placeBetHandler(cliCtx context.CLIContext, storeName string) http.HandlerFu
 
 type payoutReq struct {
 	BaseReq rest.BaseReq `json:"base_req"`
-	DayId   int64        `json:"dayId"`
+	DayId   uint64       `json:"dayId"`
 }
 
 func payoutHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
