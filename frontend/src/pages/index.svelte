@@ -15,9 +15,7 @@
     generateAccount,
     rechargeFromFaucet,
   } from '../stores/blockchain';
-  import {fromMicro, toMicro, generateMnemonic} from '../utils/cosmos';
-  import sl from '../utils/sl';
-  import {sleep} from '../utils';
+  import {fromMicro, toMicro, generateMnemonic, sl, sleep} from '../utils';
 
   const tomorrow = moment.utc().add(1, 'days');
   const today = moment.utc();

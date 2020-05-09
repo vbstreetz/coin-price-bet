@@ -1,43 +1,26 @@
 <script>
   import {onMount} from 'svelte';
   import {blockchain} from '../stores/blockchain';
-  import Chart from 'svelte-frappe-charts';
-  import { writable } from 'svelte/store';
+  import Chart from '../components/chart.svelte';
+  import {COINS} from '../config';
+  import {fromMicro} from '../utils';
 
-  const tokens = [
-    "BTC",
-    "ETH",
-    "LTC",
-    "BAND",
-    "ATOM",
-    "LINK",
-    "XTZ"
-  ];
-  let currentToken = tokens[0];
-  export const data = writable({
-    times: [],
-    prices: [],
-  });
-
-  $: graph = {
-    labels: $data.times,
-    datasets: [{values: $data.prices}]
-  };
+  let currentCoinSymbol = COINS[0];
+  let chartX;
+  let chartY;
 
   onMount(fetchData);
 
   function switchChart(event) {
-    const token = event.target.dataset.token;
-    currentToken = tokens[token];
-    fetchData(token);
+    const {coin} = event.target.dataset;
+    currentCoinSymbol = COINS[parseInt(coin)];
+    fetchData(coin);
   }
 
   async function fetchData(coin = 0) {
     const prices = await blockchain.query(`/coinpricebet/today-coin-prices/${coin}`);
-    data.set({
-      times: new Array(prices.length).fill(0),
-      prices: prices.map((s) => parseInt(s) / 1000000),
-    });
+    chartX = new Array(prices.length).fill(0);
+    chartY = prices.map((s) => fromMicro(parseInt(s)));
   }
 </script>
 
@@ -58,6 +41,11 @@
   :global(.dark) .dropdown-item {
     color: white
   }
+
+  .chart-container {
+    background: #424242;
+    border-radius: 2px;
+  }
 </style>
 
 <div class="flex flex-col">
@@ -65,7 +53,7 @@
     <h3>Today's Price Performance</h3>
   </div>
 
-  <div>
+  <div class="flex flex-col">
     <div class="dropdown is-hoverable">
       <div class="dropdown-trigger cursor-pointer">
         <div
@@ -73,7 +61,7 @@
           aria-controls="dropdown-menu"
           class="flex items-center"
         >
-          <span>{currentToken}</span>
+          <span>{currentCoinSymbol}</span>
           <span class="icon is-small dropdown-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -93,9 +81,9 @@
       </div>
       <div class="dropdown-menu" id="draw-dropdown-menu" role="menu">
         <div class="dropdown-content">
-          {#each tokens as token, id}
-            <a class="dropdown-item" href="javascript:" data-token={id} on:click={switchChart}>
-              {token}
+          {#each COINS as coin, id}
+            <a class="dropdown-item" href="javascript:" data-coin={id} on:click={switchChart}>
+              {coin}
             </a>
           {/each}
         </div>
@@ -103,7 +91,9 @@
     </div>
   </div>
 
-  {#if $data.times.length}
-    <Chart data={graph} type="line"/>
-  {/if}
+  <div class="chart-container mt-4 p-5 pt-10">
+    {#if chartX && chartY}
+      <Chart x={chartX} y={chartY} yLabel="USD" type="line"/>
+    {/if}
+  </div>
 </div>

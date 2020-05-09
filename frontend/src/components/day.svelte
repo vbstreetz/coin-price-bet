@@ -1,26 +1,62 @@
 <script>
+  import _ from 'lodash';
   import {onMount} from 'svelte';
-  import {get} from 'svelte/store';
+  import {get, derived} from 'svelte/store';
   import moment from 'moment';
+  import Chart from '../components/chart.svelte';
   import Clock from '../components/clock.svelte';
-  import {fromMicro, toMicro} from '../utils/cosmos';
-  import {formatFiat, sleep} from '../utils';
-  import sl from '../utils/sl';
+  import {fromMicro, toMicro, formatFiat, sleep, sl} from '../utils';
   import {address, info, blockchain, tryReloadBalance} from '../stores/blockchain';
   import {COINS, DAY_STATES} from '../config';
 
   export let day;
   export let label;
 
-  const daySinceEpoch = day.diff(moment.unix(get(info).firstDay), 'days');
+  const dayId = day.diff(moment.unix(get(info).firstDay), 'days');
   const dateLabel = day.format('YYYY-MM-DD');
 
   let dayInfo;
   let myDayInfo;
+  let coinStats = [];
+  let chartY;
 
   let canBet;
   let isDrawing;
   let isPayout;
+
+  let isBetting;
+  let isWithdrawingWins;
+
+  address.subscribe(() => {
+    Promise.all([
+      loadDayInfo(),
+      loadMyDayInfo()
+    ])
+  });
+
+  $: {
+    if (dayInfo) {
+      let perfs = dayInfo.coinsPerf.map((perf, id) => ({id, perf}));
+      if (!canBet) {
+        perfs = _.orderBy(perfs, 'perf', 'desc');
+      }
+      coinStats = perfs.map(({id, perf}) => {
+        return {
+          id,
+          perf,
+          amount: !myDayInfo ? 0 : parseInt(myDayInfo.coinBetTotalAmount[id])
+        };
+      });
+
+      chartY = dayInfo.coinsVolume.map(v => fromMicro(v));
+    } else {
+      coinStats = COINS.map((c, id) => ({
+        id,
+        perf: 0,
+        amount: 0,
+      }));
+    }
+  }
 
   onMount(async function () {
     await Promise.all([
@@ -30,7 +66,7 @@
   });
 
   async function loadDayInfo() {
-    const info = await blockchain.query(`/coinpricebet/day-info/${daySinceEpoch}`);
+    const info = await blockchain.query(`/coinpricebet/day-info/${dayId}`);
     info.grandPrizeAmount = parseInt(info.grandPrizeAmount);
     info.currencyPriceUSD = Math.pow(10, 6); // parseInt(info.currencyPriceUSD);
     info.coinsPerf = info.coinsPerf.map(n => parseInt(n));
@@ -46,7 +82,7 @@
   async function loadMyDayInfo() {
     const $address = get(address);
     if ($address) {
-      const info = await blockchain.query(`/coinpricebet/day-info/${daySinceEpoch}/${$address}`);
+      const info = await blockchain.query(`/coinpricebet/day-info/${dayId}/${$address}`);
       info.totalBetAmount = parseInt(info.totalBetAmount);
       info.coinBetTotalAmount = info.coinBetTotalAmount.map(n => parseInt(n));
       myDayInfo = info;
@@ -55,6 +91,9 @@
 
   async function onSendPrediction(event) {
     event.preventDefault();
+
+    isBetting = false;
+
     const coin = event.target.coin.value;
     const amount = event.target.amount.value;
     const $info = get(info);
@@ -65,7 +104,7 @@
           amount: `${toMicro(amount).toString()}stake`,
           coinId: COINS.indexOf(coin)
         });
-        sl('success', 'WAITING FOR CONFIRMATION...');
+        sl('success', 'Waiting for confirmation...');
         await sleep(3000);
         await Promise.all([
           loadDayInfo(),
@@ -75,6 +114,26 @@
       });
     } catch (e) {
       sl('error', e);
+    } finally {
+      isBetting = false;
+    }
+  }
+
+  async function onWithdrawWins(event) {
+    isWithdrawingWins = true;
+    try {
+      await blockchain.tx('post', '/coinpricebet/payout', {
+        dayId: dayId.toString()
+      });
+      sl('success', 'Done!');
+      await sleep(3000);
+      await Promise.all([
+        loadDayInfo(),
+        loadMyDayInfo(),
+        tryReloadBalance(),
+      ]);
+    } finally {
+      isWithdrawingWins = false;
     }
   }
 </script>
@@ -145,12 +204,8 @@
             </header>
             <div class="small">
               <!-- chart -->
-              {#if canBet || dayInfo.coinsVolume.length}
-                <ul>
-                  {#each COINS as c, i}
-                    <li>{c} - {fromMicro(dayInfo.coinsVolume[i] || 0)} BET</li>
-                  {/each}
-                </ul>
+              {#if canBet || chartY}
+                <Chart y={chartY} x={COINS} type='bar' yLabel="BET"/>
               {:else}
                 There were no predictions during this day.
               {/if}
@@ -169,27 +224,20 @@
                     <thead>
                     <tr>
                       <th>Symbol</th>
+                      {#if !canBet}
+                        <th></th>
+                      {/if}
                       <th align="right">Amount</th>
-                      <th align="right">Potential Win</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {#each COINS as coin, i}
+                    {#each coinStats as stat}
                       <tr>
-                        <td class="text-left">
-                          <div class='flex'>
-                            <div class='flex-grow'>{coin}</div>
-                            {#if !canBet}
-                              <small class="text-xs ml-3">{(fromMicro(dayInfo.coinsPerf[i] || 0) * 100).toFixed(2)}%</small>
-                            {/if}
-                          </div>
-                        </td>
-                        {#if myDayInfo}
-                          <td align="right">{fromMicro(myDayInfo.coinBetTotalAmount[i] || 0)} <small
-                            class="text-xs">BET</small></td>
-                          <td align="right">{fromMicro(myDayInfo.coinPredictedWinAmount[i] || 0)} <small
-                            class="text-xs">BET</small></td>
+                        <td>{COINS[stat.id]}</td>
+                        {#if !canBet}
+                          <td class="text-xs ml-3">{(fromMicro(stat.perf) * 100).toFixed(2)}%</td>
                         {/if}
+                        <td align="right">{fromMicro(stat.amount)} <small class="text-xs">BET</small></td>
                       </tr>
                     {/each}
                     </tbody>
@@ -215,11 +263,12 @@
                   <div class="mt-3">
                     <label for="bet-input">I'm supporting my prediction with this amount of BET:</label>
                     <br/>
-                    <input required="required" class="input" type="text" id="bet-input" name="amount" placeholder="Enter amount of BET..."/>
+                    <input required="required" class="input" type="text" id="bet-input" name="amount"
+                           placeholder="Enter amount of BET..."/>
                   </div>
 
                   <div class="flex flex-grow mt-3">
-                    <button type="submit" class="button is-link flex-grow" disabled={!$address}>
+                    <button type="submit" class="button is-link flex-grow" disabled={isBetting || !$address}>
                       Send prediction
                     </button>
                   </div>
@@ -235,6 +284,13 @@
             {#if myDayInfo}
               <div class="mt-4">Your total bet amount: {fromMicro(myDayInfo.totalBetAmount)} BET</div>
               <div>Your total win amount: {fromMicro(myDayInfo.totalWinAmount)} BET</div>
+              <div class="flex flex-grow mt-3">
+                <button type="submit" class="button is-link flex-grow"
+                        disabled={isWithdrawingWins || myDayInfo.paid || !myDayInfo.totalWinsAmount}
+                        on:click={onWithdrawWins}>
+                  Withdraw Wins
+                </button>
+              </div>
             {/if}
           {/if}
         </div>
@@ -419,5 +475,9 @@
 
   .day-card .small {
     max-width: 60vw;
+  }
+
+  .table {
+    width: 100%;
   }
 </style>

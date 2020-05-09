@@ -9,7 +9,7 @@ import bech32 from 'bech32';
 import bitcoinjs from 'bitcoinjs-lib';
 import bip32 from 'bip32';
 import bip39 from 'bip39';
-import { sleep } from '../utils';
+import { sleep, cache } from '../utils';
 // import {PrivKeySecp256k1} from '@everett-protocol/cosmosjs/crypto';
 
 const BROADCAST_MAX_RETRIES = 10;
@@ -19,7 +19,7 @@ const HD_PATH = "m/44'/118'/0'/0/0"; // eslint-disable-line quotes
 
 const secp256k1 = new ec.ec('secp256k1');
 
-export default class {
+export class Cosmos {
   constructor({ host, chainId, gasInfo }) {
     this.host = host;
     this.chainId = chainId;
@@ -280,34 +280,6 @@ function makeRandomString(length) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
-}
-
-function cache(k, v) {
-  switch (arguments.length) {
-    case 2:
-      if (v === null) {
-        return window.localStorage.removeItem(k);
-      }
-      return window.localStorage.setItem(k, JSON.stringify(v));
-
-    case 1:
-      try {
-        return JSON.parse(window.localStorage.getItem(k));
-      } catch (e) {
-        return null;
-      }
-
-    default:
-      return;
-  }
-}
-
-export function toMicro(n) {
-  return n * Math.pow(10, 6);
-}
-
-export function fromMicro(n) {
-  return n / Math.pow(10, 6);
 }
 
 export function generateMnemonic() {

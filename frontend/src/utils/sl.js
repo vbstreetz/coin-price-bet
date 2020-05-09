@@ -1,10 +1,10 @@
-import sl from 'sweetalert/dist/sweetalert-dev.js';
+import SL from 'sweetalert/dist/sweetalert-dev.js';
 // import swal from 'sweetalert/dev/sweetalert.es6.js';
 import 'sweetalert/dist/sweetalert.css';
 
 const noop = () => {};
 
-export default (type, msg, title, done = noop, moreOpts = {}) => {
+export function sl(type, msg, title, done = noop, moreOpts = {}) {
   if ('error' === type) {
     msg = msg.responseText || msg.message || msg;
   }
@@ -29,5 +29,5 @@ export default (type, msg, title, done = noop, moreOpts = {}) => {
     error: '#DD6B55',
   }[type];
 
-  sl(opts, done);
-};
+  SL(opts, done);
+}

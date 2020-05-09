@@ -6,7 +6,8 @@ export const DAY_STATES = {
   PAYOUT: 2,
 };
 
-export const API_HOST =
-  window.location.hostname === 'localhost'
-    ? 'http://localhost:4848'
-    : 'https://witnet.tools';
+export const IS_DEV = window.location.hostname === 'localhost';
+
+export const API_HOST = IS_DEV
+  ? 'http://localhost:4848'
+  : 'https://witnet.tools';

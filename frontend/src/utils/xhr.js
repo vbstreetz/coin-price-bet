@@ -1,7 +1,7 @@
 import NProgress from 'nprogress';
 import { API_HOST } from '../config';
 
-export default async function (method, endpoint, data) {
+export async function xhr(method, endpoint, data) {
   NProgress.start();
   NProgress.set(0.4);
 

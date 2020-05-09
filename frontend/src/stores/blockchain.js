@@ -1,9 +1,8 @@
-import NProgress from "nprogress";
-import {writable, get} from 'svelte/store';
-import {sleep} from '../utils';
-import xhr from '../utils/xhr';
-import Cosmos, {toMicro, generateMnemonic} from '../utils/cosmos';
-import {API_HOST} from "../config";
+import NProgress from 'nprogress';
+import { writable, get } from 'svelte/store';
+import { sleep } from '../utils';
+import { Cosmos, xhr, cache, toMicro, generateMnemonic } from '../utils';
+import { API_HOST } from '../config';
 
 export const blockchain = new (class extends Cosmos {
   async xhr(...args) {
@@ -18,7 +17,7 @@ export const blockchain = new (class extends Cosmos {
 })({
   host: API_HOST + '/bet-rest',
   chainId: 'band-consumer',
-  gasInfo: {maxFee: toMicro(1), denom: 'stake'},
+  gasInfo: { maxFee: toMicro(1), denom: 'stake' },
 });
 
 export const address = writable(null);
@@ -79,7 +78,9 @@ export async function loadBalance() {
 export async function tryReloadBalance() {
   let b = get(balance);
   for (let i = 0; i < 3; i++) {
-    if (b !== get(balance)) break;
+    if (b !== get(balance)) {
+      break;
+    }
     b = get(balance);
     await sleep(2000);
     await loadBalance();
@@ -87,9 +88,7 @@ export async function tryReloadBalance() {
 }
 
 async function loadMyInfo() {
-  myInfo.set(
-    await blockchain.query(`/coinpricebet/info/${get(address)}`)
-  );
+  myInfo.set(await blockchain.query(`/coinpricebet/info/${get(address)}`));
 }
 
 export async function rechargeFromFaucet() {
@@ -99,6 +98,7 @@ export async function rechargeFromFaucet() {
 export async function generateAccount() {
   const mnemonic = generateMnemonic();
   console.log(mnemonic);
+  cache('mnemonic', mnemonic);
   await loadAccount(mnemonic);
   await rechargeFromFaucet();
   await tryReloadBalance();
