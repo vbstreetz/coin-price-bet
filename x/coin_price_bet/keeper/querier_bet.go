@@ -29,10 +29,10 @@ type MyInfo struct {
 }
 
 type MyDayInfo struct {
-	CoinBetTotalAmount     []uint64 `json:"coinBetTotalAmount"`
-	CoinPredictedWinAmount []uint64 `json:"coinPredictedWinAmount"`
-	TotalBetAmount         uint64   `json:"totalBetAmount"`
-	TotalWinAmount         uint64   `json:"totalWinAmount"`
+	CoinBetTotalAmount []uint64 `json:"coinBetTotalAmount"`
+	TotalBetAmount     uint64   `json:"totalBetAmount"`
+	TotalWinAmount     uint64   `json:"totalWinAmount"`
+	Paid               bool     `json:"paid"`
 }
 
 // queryInfo is a query function to get general blockchain info
@@ -133,8 +133,7 @@ func queryMyDayInfo(
 	ctx sdk.Context, keeper Keeper, req abci.RequestQuery, dayIdString string, bettor string,
 ) ([]byte, error) {
 	ret := &MyDayInfo{
-		CoinBetTotalAmount:     []uint64{},
-		CoinPredictedWinAmount: []uint64{},
+		CoinBetTotalAmount: []uint64{},
 	}
 
 	betDayId, err := strconv.ParseInt(dayIdString, 0, 64)
@@ -153,10 +152,11 @@ func queryMyDayInfo(
 		}
 
 		ret.CoinBetTotalAmount = append(ret.CoinBetTotalAmount, amount)
-		ret.CoinPredictedWinAmount = append(ret.CoinPredictedWinAmount, win)
 		ret.TotalBetAmount += amount
 		ret.TotalWinAmount += win
 	}
+
+	ret.Paid = keeper.GetDayCoinBettorPaid(ctx, betDayId, int64(winningCoinId), bettor)
 
 	return keeper.cdc.MustMarshalJSON(ret), nil
 }
