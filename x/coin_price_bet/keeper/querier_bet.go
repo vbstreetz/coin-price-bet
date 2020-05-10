@@ -142,21 +142,16 @@ func queryMyDayInfo(
 	}
 
 	coins := types.GetCoins()
-	winningCoinId := keeper.GetWinningDayCoinId(ctx, betDayId)
+	winningCoinId := int64(keeper.GetWinningDayCoinId(ctx, betDayId))
 
 	for coinId := range coins {
-		var win uint64
 		amount := uint64(keeper.GetDayCoinBettorAmount(ctx, betDayId, int64(coinId), bettor))
-		if winningCoinId == uint8(coinId) {
-			win = amount
-		}
-
 		ret.CoinBetTotalAmount = append(ret.CoinBetTotalAmount, amount)
 		ret.TotalBetAmount += amount
-		ret.TotalWinAmount += win
 	}
 
-	ret.Paid = keeper.GetDayCoinBettorPaid(ctx, betDayId, int64(winningCoinId), bettor)
+	ret.TotalWinAmount = uint64(keeper.GetDayWinAmount(ctx, betDayId, winningCoinId, bettor))
+	ret.Paid = keeper.GetDayCoinBettorPaid(ctx, betDayId, winningCoinId, bettor)
 
 	return keeper.cdc.MustMarshalJSON(ret), nil
 }

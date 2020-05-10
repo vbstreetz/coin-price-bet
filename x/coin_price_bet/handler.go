@@ -265,17 +265,12 @@ func handlePayout(ctx sdk.Context, msg MsgPayout, keeper Keeper) (*sdk.Result, e
 
 	// Ensure user is a winner
 	if keeper.GetDayCoinBettorPaid(ctx, msg.DayId, winningCoinId, bettor) {
-		return nil, sdkerrors.Wrapf(types.Error, "bettor(%s) already paid", bettor)
+		return nil, sdkerrors.Wrapf(types.Error, "bettor(%s) already paid in day (%s)", bettor, msg.DayId)
 	}
-	amount := keeper.GetDayCoinBettorAmount(ctx, msg.DayId, winningCoinId, bettor)
-	if amount == 0 {
+	prize := keeper.GetDayWinAmount(ctx, msg.DayId, winningCoinId, bettor)
+	if prize == 0 {
 		return nil, sdkerrors.Wrapf(types.Error, "bettor(%s) has no bets in the winning day(%d), coin(%d)", bettor, msg.DayId, winningCoinId)
 	}
-
-	// Transfer prize
-	day := keeper.GetDayInfo(ctx, msg.DayId)
-	dayCoin := keeper.GetDayCoinInfo(ctx, msg.DayId, winningCoinId)
-	prize := amount * int64(day.GrandPrize) / int64(dayCoin.TotalAmount)
 	keeper.SetDayCoinBettorPaid(ctx, msg.DayId, winningCoinId, bettor, true)
 	keeper.Payout(ctx, msg.Bettor, sdk.NewCoins(sdk.NewInt64Coin("stake", prize)))
 

@@ -189,3 +189,16 @@ func (k Keeper) SetDayCoinBettorPaid(ctx sdk.Context, dayId int64, coinId int64,
 	store := ctx.KVStore(k.storeKey)
 	store.Set(storeKey, k.cdc.MustMarshalBinaryBare(paid))
 }
+
+// Todo: better algo that also takes into account the other coins
+func (k Keeper) GetDayWinAmount(ctx sdk.Context, dayId int64, winningCoinId int64, bettor string) int64 {
+	amount := k.GetDayCoinBettorAmount(ctx, dayId, winningCoinId, bettor)
+	if amount == 0 {
+		return 0
+	}
+
+	// Transfer prize
+	day := k.GetDayInfo(ctx, dayId)
+	dayCoin := k.GetDayCoinInfo(ctx, dayId, winningCoinId)
+	return (amount * int64(day.GrandPrize)) / int64(dayCoin.TotalAmount)
+}
