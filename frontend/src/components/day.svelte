@@ -286,7 +286,7 @@
               <div>Your total win amount: {fromMicro(myDayInfo.totalWinAmount)} BET</div>
               <div class="flex flex-grow mt-3">
                 <button type="submit" class="button is-link flex-grow"
-                        disabled={isWithdrawingWins || myDayInfo.paid || !myDayInfo.totalWinsAmount}
+                        disabled={isWithdrawingWins || myDayInfo.paid || !myDayInfo.totalWinAmount}
                         on:click={onWithdrawWins}>
                   Withdraw Wins
                 </button>
