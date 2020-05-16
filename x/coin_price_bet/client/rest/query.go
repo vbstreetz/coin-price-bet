@@ -8,24 +8,6 @@ import (
 	"net/http"
 )
 
-func readOrderHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		orderID := vars[restPathVarOrderId]
-
-		res, _, err := cliCtx.QueryWithData(
-			fmt.Sprintf("custom/%s/order/%s", storeName, orderID),
-			nil,
-		)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
-			return
-		}
-
-		rest.PostProcessResponse(w, cliCtx, res)
-	}
-}
-
 func getTodayCoinPricesHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)

@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	QueryOrder           = "order"
 	QueryTodayCoinPrices = "today-coin-prices"
 	QueryInfo            = "info"
 	QueryDayInfo         = "day-info"
@@ -20,10 +19,6 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err error) {
 		types.Logger.Info(fmt.Sprintf("query /%s", path[0]))
 		switch path[0] {
-		case QueryOrder:
-			if len(path) == 1 {
-				return queryOrder(ctx, keeper, req, path[1])
-			}
 		case QueryTodayCoinPrices:
 			if len(path[1:]) == 1 {
 				return queryTodayCoinPrices(ctx, keeper, req, path[1])

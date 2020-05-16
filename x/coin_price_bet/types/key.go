@@ -19,24 +19,8 @@ const (
 var (
 	// GlobalStoreKeyPrefix is a prefix for versioning store
 	GlobalStoreKeyPrefix = []byte{0x00}
-
-	// OrdersCountStoreKey is a key that help getting to current orders count state variable
-	OrdersCountStoreKey = append(GlobalStoreKeyPrefix, []byte("OrdersCount")...)
-
 	// ChannelStoreKeyPrefix is a prefix for storing channel
 	ChannelStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("Channel")...)
-
-	// OrderStoreKeyPrefix is a prefix for storing order
-	OrderStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("Order")...)
-
-	// 	// BlockStoreKeyPrefix is a prefix for storing block id=>info{time, price}
-	// 	BlockStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("BlockStore")...)
-	//
-	// 	// BlockTimeStoreKeyPrefix is a prefix for storing block time=>id
-	// 	BlockTimeStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("BlockTime")...)
-	//
-	// 	// DayCoinBlockTimesStoreKeyPrefix is a prefix for storing block times array [time, ...] of a particular day
-	// 	DayCoinBlockTimesStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("DayCoinBlockTimes")...)
 
 	// Prefix to store prices of a coin in a particular day
 	DayCoinPricesStoreKeyPrefix = append(GlobalStoreKeyPrefix, []byte("DayCoinPrices")...)
@@ -135,28 +119,6 @@ func ChannelStoreKey(chainName, channelPort string) []byte {
 }
 
 //
-
-// Generate key for each order in store
-func OrderStoreKey(orderID uint64) []byte {
-	return append(OrderStoreKeyPrefix, UInt64ToBytes(orderID)...)
-}
-
-//
-
-// // Generate key for each block in store
-// func BlockStoreKey(blockID uint64) []byte {
-// 	return append(BlockStoreKeyPrefix, UInt64ToBytes(blockID)...)
-// }
-//
-// // Generate key for each block time in store
-// func BlockTimeStoreKey(blockTime uint64) []byte {
-// 	return append(BlockTimeStoreKeyPrefix, UInt64ToBytes(blockTime)...)
-// }
-//
-// // Generate key for each block time in store
-// func DayCoinBlockTimesStoreKey(dayCoinId uint64, ) []byte {
-// 	return append(DayCoinBlockTimesStoreKeyPrefix, UInt64ToBytes(dayCoinId)...)
-// }
 
 // Generate key for each day+coin prices in store
 func DayCoinPricesStoreKey(dayId int64, coinId int64) []byte {

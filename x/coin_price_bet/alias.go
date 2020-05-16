@@ -21,7 +21,6 @@ var (
 
 type (
 	Keeper              = keeper.Keeper
-	MsgBuyGold          = types.MsgBuyGold
 	MsgSetSourceChannel = types.MsgSetSourceChannel
 	MsgPlaceBet         = types.MsgPlaceBet
 	MsgPayout           = types.MsgPayout
